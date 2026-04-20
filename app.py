@@ -1,27 +1,12 @@
 import os
 import requests
-import traceback
-from flask import Flask, render_template, request, flash, redirect, url_for, render_template_string
+from flask import Flask, render_template, request, flash, redirect, url_for
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", os.urandom(24).hex())  # use env or random
-
-# ------------------------------------------------------------
-# ERROR HANDLER – shows detailed error in browser
-# ------------------------------------------------------------
-@app.errorhandler(500)
-def internal_server_error(e):
-    tb = traceback.format_exc()
-    return render_template_string(f"""
-    <div style="background:#f8d7da; color:#721c24; padding:20px; margin:20px; border-radius:8px; font-family:monospace;">
-        <h2>🔥 Internal Server Error (500)</h2>
-        <pre style="background:#fff; padding:15px; overflow:auto;">{tb}</pre>
-        <p>Check your API keys, endpoints, or template syntax.</p>
-    </div>
-    """), 500
+app.secret_key = os.getenv("SECRET_KEY", os.urandom(24).hex())
 
 # ------------------------------------------------------------
 # RapidAPI config (may be None if not set)
