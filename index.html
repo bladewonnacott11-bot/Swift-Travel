@@ -5,23 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Swift Travels | Luxury Travel Deals</title>
   
-  <!-- Premium Fonts -->
+  <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Custom Styles -->
+  <!-- Styles -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Animated Background -->
   <div class="bg-gradient"></div>
   <div class="bg-particles"></div>
 
-  <!-- Navigation -->
   <nav class="navbar">
     <div class="nav-container">
       <a href="#" class="nav-logo">
@@ -38,7 +34,6 @@
     </div>
   </nav>
 
-  <!-- Hero Section -->
   <section class="hero">
     <div class="hero-content">
       <span class="hero-badge"><i class="fas fa-crown"></i> Premium Travel</span>
@@ -49,66 +44,6 @@
       <p class="hero-subtitle">
         Handpicked daily deals on flights, luxury hotels, and premium car rentals.
       </p>
-    </div>
-  </section>
-
-  <!-- Search Section -->
-  <section class="search-section">
-    <div class="search-container">
-      <div class="search-header">
-        <h2><i class="fas fa-search"></i> Find your perfect flight</h2>
-        <p>Search hundreds of airlines and book at the lowest price</p>
-      </div>
-      
-      <form id="search-form" class="search-form">
-        <div class="form-row">
-          <div class="form-group">
-            <label><i class="fas fa-plane-departure"></i> From</label>
-            <input type="text" id="origin" placeholder="Airport code (e.g., LHR)" maxlength="3" required>
-          </div>
-          <div class="form-group">
-            <label><i class="fas fa-plane-arrival"></i> To</label>
-            <input type="text" id="destination" placeholder="Airport code (e.g., CDG)" maxlength="3" required>
-          </div>
-        </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label><i class="fas fa-calendar"></i> Departure</label>
-            <input type="date" id="departure" required>
-          </div>
-          <div class="form-group">
-            <label><i class="fas fa-user"></i> Passengers</label>
-            <input type="number" id="passengers" min="1" max="9" value="1">
-          </div>
-        </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label><i class="fas fa-dollar-sign"></i> Currency</label>
-            <select id="currency">
-              <option value="USD">USD ($)</option>
-              <option value="EUR">EUR (€)</option>
-              <option value="GBP">GBP (£)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label><i class="fas fa-chair"></i> Cabin</label>
-            <select id="cabin">
-              <option value="ECONOMY">Economy</option>
-              <option value="PREMIUM_ECONOMY">Premium Economy</option>
-              <option value="BUSINESS">Business</option>
-              <option value="FIRST">First</option>
-            </select>
-          </div>
-        </div>
-        
-        <button type="submit" class="search-btn">
-          <i class="fas fa-magnifying-glass"></i> Search Flights
-        </button>
-      </form>
-      
-      <div id="search-results" class="search-results" style="display: none;"></div>
     </div>
   </section>
 
@@ -124,37 +59,31 @@
       <div class="deals-grid">
         <!-- Flight Card -->
         <div class="deal-card" id="flight-card">
-          <div class="card-icon">
-            <i class="fas fa-plane"></i>
-          </div>
+          <div class="card-icon"><i class="fas fa-plane"></i></div>
           <h3>Cheapest Flight</h3>
           <div class="card-content loading">
             <div class="loader"></div>
-            <p>Searching...</p>
+            <p>Loading...</p>
           </div>
         </div>
         
         <!-- Hotel Card -->
         <div class="deal-card" id="hotel-card">
-          <div class="card-icon">
-            <i class="fas fa-hotel"></i>
-          </div>
+          <div class="card-icon"><i class="fas fa-hotel"></i></div>
           <h3>Best Hotel Deal</h3>
           <div class="card-content loading">
             <div class="loader"></div>
-            <p>Searching...</p>
+            <p>Loading...</p>
           </div>
         </div>
         
         <!-- Car Card -->
         <div class="deal-card" id="car-card">
-          <div class="card-icon">
-            <i class="fas fa-car"></i>
-          </div>
+          <div class="card-icon"><i class="fas fa-car"></i></div>
           <h3>Cheapest Car Hire</h3>
           <div class="card-content loading">
             <div class="loader"></div>
-            <p>Searching...</p>
+            <p>Loading...</p>
           </div>
         </div>
       </div>
@@ -166,7 +95,6 @@
     </div>
   </section>
 
-  <!-- Features Section -->
   <section class="features-section">
     <div class="features-container">
       <div class="feature-item">
@@ -187,7 +115,6 @@
     </div>
   </section>
 
-  <!-- Footer -->
   <footer class="footer">
     <div class="footer-container">
       <div class="footer-brand">
