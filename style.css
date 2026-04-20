@@ -268,6 +268,7 @@ body {
   box-shadow: 0 20px 30px -8px #1e3a8a;
 }
 
+/* Search Results */
 .search-results {
   margin-top: 2.5rem;
   padding: 2rem;
@@ -277,7 +278,71 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* ===== DEALS SECTION ===== */
+.result-card {
+  text-align: center;
+}
+
+.result-route {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(to right, #fff, #bdd3ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.result-price {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #fbbf24;
+  margin: 1rem 0;
+  text-shadow: 0 2px 15px rgba(245, 158, 11, 0.3);
+}
+
+.result-detail {
+  color: #bdd3ff;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.result-dates {
+  color: #7f95c0;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+.result-btn {
+  display: inline-block;
+  background: rgba(59, 130, 246, 0.15);
+  color: #bdd3ff;
+  text-decoration: none;
+  padding: 0.8rem 2rem;
+  border-radius: 40px;
+  font-weight: 500;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  transition: all 0.2s;
+  backdrop-filter: blur(4px);
+}
+
+.result-btn:hover {
+  background: #2563eb;
+  color: white;
+  border-color: #60a5fa;
+}
+
+.error-message {
+  text-align: center;
+  color: #f87171;
+  padding: 1rem;
+}
+
+.error-message i {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ===== DAILY DEALS SECTION ===== */
 .deals-section {
   padding: 4rem 2rem;
 }
