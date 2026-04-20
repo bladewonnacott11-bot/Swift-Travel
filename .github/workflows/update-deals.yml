@@ -1,26 +1,42 @@
-name: Update Deals
+name: Update Daily Deals
+
 on:
-  schedule: [cron: '0 8 * * *']
-  workflow_dispatch:
+  schedule:
+    # Runs every day at 08:00 UTC
+    - cron: '0 8 * * *'
+  workflow_dispatch:  # Allows manual trigger from GitHub UI
+
 permissions:
-  contents: write
+  contents: write      # Required to push changes back to the repo
+
 jobs:
-  update:
+  update-deals:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: '3.11'}
-      - run: pip install requests
-      - run: python travel_fetcher.py
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run deal fetcher
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           FLIGHT_ORIGIN: ${{ secrets.FLIGHT_ORIGIN }}
           FLIGHT_DESTINATION: ${{ secrets.FLIGHT_DESTINATION }}
           FLIGHT_DEPART_DATE: ${{ secrets.FLIGHT_DEPART_DATE }}
-      - run: |
-          git config user.name bot
-          git config user.email bot@github.com
+        run: python travel_fetcher.py
+
+      - name: Commit and push updated deals.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/deals.json
-          git diff --quiet || git commit -m "Update deals"
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update deals [skip ci]"
           git push
