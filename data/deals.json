@@ -1,0 +1,32 @@
+{
+  "last_updated": "2026-04-20T12:00:00Z",
+  "flights": {
+    "price": 89.99,
+    "currency": "USD",
+    "airline": "Swift Air",
+    "deeplink": "https://www.skyscanner.com",
+    "origin": "LHR",
+    "destination": "CDG",
+    "depart_date": "2026-05-20"
+  },
+  "hotels": {
+    "name": "Swift Hotel Paris",
+    "price": 120.50,
+    "currency": "USD",
+    "deeplink": "https://www.skyscanner.com/hotels",
+    "city": "Paris",
+    "checkin": "2026-05-20",
+    "checkout": "2026-05-22"
+  },
+  "cars": {
+    "supplier": "Swift Rentals",
+    "vehicle": "Economy",
+    "price": 45.00,
+    "currency": "USD",
+    "deeplink": "https://www.skyscanner.com/carhire",
+    "pickup": "CDG",
+    "dropoff": "CDG",
+    "pickup_date": "2026-05-20",
+    "dropoff_date": "2026-05-22"
+  }
+}
