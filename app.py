@@ -9,10 +9,10 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", os.urandom(24).hex())
 
 # ------------------------------------------------------------
-# RapidAPI config (may be None if not set)
+# RapidAPI config
 # ------------------------------------------------------------
 RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
-RAPIDAPI_HOST = os.getenv("RAPIDAPI_HOST")
+RAPIDAPI_HOST = os.getenv("RAPIDAPI_HOST", "skyscanner89.p.rapidapi.com")  # default host
 
 HEADERS = {
     "X-RapidAPI-Key": RAPIDAPI_KEY,
@@ -20,11 +20,11 @@ HEADERS = {
     "Content-Type": "application/json"
 }
 
-# Flag to use real API (set to True once endpoints are correct)
-USE_REAL_API = False  # Change to True when API is ready
+# USE REAL API – set to True to fetch live data
+USE_REAL_API = True   # <-- CHANGED TO TRUE
 
 # ------------------------------------------------------------
-# Helper: Dummy data generators
+# Helper: Dummy data generators (fallback)
 # ------------------------------------------------------------
 def get_dummy_flights(form_data):
     return [
@@ -75,7 +75,9 @@ def flights():
             flights_data = get_dummy_flights(request.form)
             return render_template('flights.html', results=flights_data, form_data=request.form)
         
-        # Real API call (adjust endpoint as needed)
+        # REAL API CALL – adjust endpoint based on your API's documentation
+        # Common endpoints for Skyscanner89: /flights/search or /apiservices/browsequotes/...
+        # We'll try a typical POST endpoint first.
         url = f"https://{RAPIDAPI_HOST}/flights/search"
         payload = {
             "origin": origin,
@@ -86,13 +88,20 @@ def flights():
             "currency": "USD"
         }
         try:
-            response = requests.post(url, json=payload, headers=HEADERS, timeout=10)
+            print(f"🔍 Flight API request to {url}")
+            response = requests.post(url, json=payload, headers=HEADERS, timeout=15)
+            print(f"📡 Flight API status: {response.status_code}")
             response.raise_for_status()
             data = response.json()
+            print(f"✅ Flight API response received: {str(data)[:200]}...")  # preview
             flights_data = parse_flight_results(data)
+            if not flights_data:
+                flash('No flights found. Using demo data.', 'warning')
+                flights_data = get_dummy_flights(request.form)
             return render_template('flights.html', results=flights_data, form_data=request.form)
         except Exception as e:
-            flash(f'API error: {str(e)}. Using dummy data instead.', 'warning')
+            print(f"❌ Flight API error: {e}")
+            flash(f'API error: {str(e)}. Using demo data instead.', 'warning')
             flights_data = get_dummy_flights(request.form)
             return render_template('flights.html', results=flights_data, form_data=request.form)
     
@@ -101,21 +110,26 @@ def flights():
 def parse_flight_results(data):
     flights = []
     try:
+        # Try common structures
         itineraries = data.get('itineraries', []) or data.get('data', {}).get('itineraries', [])
+        if not itineraries and 'results' in data:
+            itineraries = data['results'].get('itineraries', [])
         for itin in itineraries[:20]:
             price = itin.get('price', {}).get('raw', 'N/A')
+            if price == 'N/A':
+                price = itin.get('price', {}).get('amount', 'N/A')
             outbound = itin.get('outbound', {})
             inbound = itin.get('inbound', {})
             flights.append({
                 'price': f"${price}" if price != 'N/A' else 'Price on request',
-                'outbound_departure': outbound.get('departureAt', ''),
-                'outbound_arrival': outbound.get('arrivalAt', ''),
-                'inbound_departure': inbound.get('departureAt', ''),
-                'inbound_arrival': inbound.get('arrivalAt', ''),
-                'airline': outbound.get('carriers', [{}])[0].get('name', 'Unknown')
+                'outbound_departure': outbound.get('departureAt', '') or outbound.get('departureTime', ''),
+                'outbound_arrival': outbound.get('arrivalAt', '') or outbound.get('arrivalTime', ''),
+                'inbound_departure': inbound.get('departureAt', '') or inbound.get('departureTime', ''),
+                'inbound_arrival': inbound.get('arrivalAt', '') or inbound.get('arrivalTime', ''),
+                'airline': outbound.get('carriers', [{}])[0].get('name', 'Unknown') or outbound.get('carrier', {}).get('name', 'Unknown')
             })
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Flight parsing error: {e}")
     return flights
 
 # -------------------------------------------------------------------
@@ -147,13 +161,19 @@ def hotels():
             "currency": "USD"
         }
         try:
-            response = requests.post(url, json=payload, headers=HEADERS, timeout=10)
+            print(f"🔍 Hotel API request to {url}")
+            response = requests.post(url, json=payload, headers=HEADERS, timeout=15)
+            print(f"📡 Hotel API status: {response.status_code}")
             response.raise_for_status()
             data = response.json()
             hotels_data = parse_hotel_results(data)
+            if not hotels_data:
+                flash('No hotels found. Using demo data.', 'warning')
+                hotels_data = get_dummy_hotels(request.form)
             return render_template('hotels.html', results=hotels_data, form_data=request.form)
         except Exception as e:
-            flash(f'API error: {str(e)}. Using dummy data.', 'warning')
+            print(f"❌ Hotel API error: {e}")
+            flash(f'API error: {str(e)}. Using demo data.', 'warning')
             hotels_data = get_dummy_hotels(request.form)
             return render_template('hotels.html', results=hotels_data, form_data=request.form)
     
@@ -167,11 +187,11 @@ def parse_hotel_results(data):
             hotels.append({
                 'name': hotel.get('name', 'Unknown'),
                 'price_per_night': f"${hotel.get('pricePerNight', {}).get('amount', 'N/A')}",
-                'rating': hotel.get('rating', 'N/A'),
+                'rating': hotel.get('rating', 'N/A') or hotel.get('starRating', 'N/A'),
                 'address': hotel.get('address', {}).get('street', '')
             })
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Hotel parsing error: {e}")
     return hotels
 
 # -------------------------------------------------------------------
@@ -203,13 +223,19 @@ def cars():
             "currency": "USD"
         }
         try:
-            response = requests.post(url, json=payload, headers=HEADERS, timeout=10)
+            print(f"🔍 Car API request to {url}")
+            response = requests.post(url, json=payload, headers=HEADERS, timeout=15)
+            print(f"📡 Car API status: {response.status_code}")
             response.raise_for_status()
             data = response.json()
             cars_data = parse_car_results(data)
+            if not cars_data:
+                flash('No cars found. Using demo data.', 'warning')
+                cars_data = get_dummy_cars(request.form)
             return render_template('cars.html', results=cars_data, form_data=request.form)
         except Exception as e:
-            flash(f'API error: {str(e)}. Using dummy data.', 'warning')
+            print(f"❌ Car API error: {e}")
+            flash(f'API error: {str(e)}. Using demo data.', 'warning')
             cars_data = get_dummy_cars(request.form)
             return render_template('cars.html', results=cars_data, form_data=request.form)
     
@@ -226,8 +252,8 @@ def parse_car_results(data):
                 'supplier': car.get('supplier', {}).get('name', 'Unknown'),
                 'transmission': car.get('transmission', 'N/A')
             })
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Car parsing error: {e}")
     return cars
 
 # -------------------------------------------------------------------
