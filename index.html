@@ -4,32 +4,40 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Swift Travels | Luxury Travel Deals</title>
+  <meta name="description" content="Find the cheapest flights, hotels, and car rentals with Swift Travels. Daily updated deals from Skyscanner.">
+  
+  <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Custom Styles -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Animated Background -->
   <div class="bg-gradient"></div>
   <div class="bg-particles"></div>
 
+  <!-- Navigation Bar -->
   <nav class="navbar">
     <div class="nav-container">
-      <a href="#" class="nav-logo">
+      <a href="/" class="nav-logo">
         <i class="fas fa-paper-plane"></i>
         <span>Swift Travels</span>
       </a>
       <div class="nav-links">
-        <a href="#" class="active">Home</a>
-        <a href="#">Deals</a>
-        <a href="#">Explore</a>
+        <a href="/" class="active">Home</a>
+        <a href="#deals">Deals</a>
+        <a href="#search">Search</a>
         <a href="#">Contact</a>
       </div>
-      <button class="nav-cta">Sign In</button>
+      <button class="nav-cta" aria-label="Sign In">Sign In</button>
     </div>
   </nav>
 
+  <!-- Hero Section -->
   <section class="hero">
     <div class="hero-content">
       <span class="hero-badge"><i class="fas fa-crown"></i> Premium Travel</span>
@@ -43,45 +51,49 @@
     </div>
   </section>
 
-  <section class="search-section">
+  <!-- Live Search Section -->
+  <section id="search" class="search-section">
     <div class="search-container">
       <div class="search-header">
         <h2><i class="fas fa-search"></i> Find your perfect flight</h2>
         <p>Search hundreds of airlines and book at the lowest price</p>
       </div>
+      
       <form id="search-form" class="search-form">
         <div class="form-row">
           <div class="form-group">
-            <label><i class="fas fa-plane-departure"></i> From</label>
-            <input type="text" id="origin" placeholder="Airport code (e.g., LHR)" maxlength="3" required>
+            <label for="origin"><i class="fas fa-plane-departure"></i> From</label>
+            <input type="text" id="origin" name="origin" placeholder="Airport code (e.g., LHR)" maxlength="3" required>
           </div>
           <div class="form-group">
-            <label><i class="fas fa-plane-arrival"></i> To</label>
-            <input type="text" id="destination" placeholder="Airport code (e.g., CDG)" maxlength="3" required>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label><i class="fas fa-calendar"></i> Departure</label>
-            <input type="date" id="departure" required>
-          </div>
-          <div class="form-group">
-            <label><i class="fas fa-user"></i> Passengers</label>
-            <input type="number" id="passengers" min="1" max="9" value="1">
+            <label for="destination"><i class="fas fa-plane-arrival"></i> To</label>
+            <input type="text" id="destination" name="destination" placeholder="Airport code (e.g., CDG)" maxlength="3" required>
           </div>
         </div>
+        
         <div class="form-row">
           <div class="form-group">
-            <label><i class="fas fa-dollar-sign"></i> Currency</label>
-            <select id="currency">
+            <label for="departure"><i class="fas fa-calendar"></i> Departure</label>
+            <input type="date" id="departure" name="departure" required>
+          </div>
+          <div class="form-group">
+            <label for="passengers"><i class="fas fa-user"></i> Passengers</label>
+            <input type="number" id="passengers" name="passengers" min="1" max="9" value="1">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="currency"><i class="fas fa-dollar-sign"></i> Currency</label>
+            <select id="currency" name="currency">
               <option value="USD">USD ($)</option>
               <option value="EUR">EUR (€)</option>
               <option value="GBP">GBP (£)</option>
             </select>
           </div>
           <div class="form-group">
-            <label><i class="fas fa-chair"></i> Cabin</label>
-            <select id="cabin">
+            <label for="cabin"><i class="fas fa-chair"></i> Cabin</label>
+            <select id="cabin" name="cabin">
               <option value="ECONOMY">Economy</option>
               <option value="PREMIUM_ECONOMY">Premium Economy</option>
               <option value="BUSINESS">Business</option>
@@ -89,47 +101,58 @@
             </select>
           </div>
         </div>
+        
         <button type="submit" class="search-btn">
           <i class="fas fa-magnifying-glass"></i> Search Flights
         </button>
       </form>
+      
+      <!-- Search Results Container -->
       <div id="search-results" class="search-results" style="display: none;"></div>
     </div>
   </section>
 
-  <section class="deals-section">
+  <!-- Daily Deals Section -->
+  <section id="deals" class="deals-section">
     <div class="deals-container">
       <div class="section-header">
         <span class="section-badge">Updated Daily</span>
         <h2>Today's Top Deals</h2>
         <p>Curated by our travel experts • Prices from Skyscanner</p>
       </div>
+      
       <div class="deals-grid">
-        <div class="deal-card" id="flight-card">
+        <!-- Flight Deal Card -->
+        <article class="deal-card" id="flight-card">
           <div class="card-icon"><i class="fas fa-plane"></i></div>
           <h3>Cheapest Flight</h3>
           <div class="card-content loading">
             <div class="loader"></div>
             <p>Loading...</p>
           </div>
-        </div>
-        <div class="deal-card" id="hotel-card">
+        </article>
+        
+        <!-- Hotel Deal Card -->
+        <article class="deal-card" id="hotel-card">
           <div class="card-icon"><i class="fas fa-hotel"></i></div>
           <h3>Best Hotel Deal</h3>
           <div class="card-content loading">
             <div class="loader"></div>
             <p>Loading...</p>
           </div>
-        </div>
-        <div class="deal-card" id="car-card">
+        </article>
+        
+        <!-- Car Hire Deal Card -->
+        <article class="deal-card" id="car-card">
           <div class="card-icon"><i class="fas fa-car"></i></div>
           <h3>Cheapest Car Hire</h3>
           <div class="card-content loading">
             <div class="loader"></div>
             <p>Loading...</p>
           </div>
-        </div>
+        </article>
       </div>
+      
       <div class="update-info">
         <i class="fas fa-clock"></i>
         <span id="update-time">Loading last update...</span>
@@ -137,6 +160,7 @@
     </div>
   </section>
 
+  <!-- Trust Features -->
   <section class="features-section">
     <div class="features-container">
       <div class="feature-item">
@@ -157,6 +181,7 @@
     </div>
   </section>
 
+  <!-- Footer -->
   <footer class="footer">
     <div class="footer-container">
       <div class="footer-brand">
@@ -188,9 +213,9 @@
     <div class="footer-bottom">
       <p>© 2026 Swift Travels. Powered by Skyscanner. All rights reserved.</p>
       <div class="social-icons">
-        <a href="#"><i class="fab fa-twitter"></i></a>
-        <a href="#"><i class="fab fa-instagram"></i></a>
-        <a href="#"><i class="fab fa-facebook"></i></a>
+        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
       </div>
     </div>
   </footer>
