@@ -58,7 +58,6 @@ class handler(BaseHTTPRequestHandler):
             "Content-Type": "application/json"
         }
 
-        # Create search session
         payload = {
             "query": {
                 "market": market,
@@ -90,7 +89,6 @@ class handler(BaseHTTPRequestHandler):
             if not token:
                 return {"error": "No session token"}
 
-            # Poll for results
             poll_url = f"https://skyscanner89.p.rapidapi.com/flights/live/search/poll/{token}"
             for _ in range(10):
                 time.sleep(2)
@@ -102,7 +100,6 @@ class handler(BaseHTTPRequestHandler):
             else:
                 return {"error": "Polling timeout"}
 
-            # Extract cheapest flight
             itineraries = data.get("content", {}).get("results", {}).get("itineraries", {})
             flights = []
             for bucket in itineraries.values():
