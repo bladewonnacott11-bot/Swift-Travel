@@ -1,67 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✈️ SkyScanner Travel Search – Cheap Flights, Hotels & Cars</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="/">✈️ SkyScanner Cheap Search</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <div class="navbar-nav ms-auto">
-                    <a class="nav-link" href="/flights">Flights</a>
-                    <a class="nav-link" href="/hotels">Hotels</a>
-                    <a class="nav-link" href="/cars">Car Hire</a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container mt-4">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        {% block content %}{% endblock %}
+{% extends "base.html" %}
+{% block content %}
+<h2>✈️ Search Cheap Flights</h2>
+<form method="POST" class="row g-3 mb-4">
+    <div class="col-md-3">
+        <label>Origin (IATA code)</label>
+        <input type="text" name="origin" class="form-control" placeholder="LHR" value="{{ form_data.origin or '' }}" required>
     </div>
+    <div class="col-md-3">
+        <label>Destination (IATA)</label>
+        <input type="text" name="destination" class="form-control" placeholder="JFK" value="{{ form_data.destination or '' }}" required>
+    </div>
+    <div class="col-md-2">
+        <label>Departure Date</label>
+        <input type="date" name="depart_date" class="form-control" value="{{ form_data.depart_date or '' }}" required>
+    </div>
+    <div class="col-md-2">
+        <label>Adults</label>
+        <input type="number" name="adults" class="form-control" value="{{ form_data.adults or 1 }}" min="1" required>
+    </div>
+    <div class="col-md-2 align-self-end">
+        <button type="submit" class="btn btn-primary w-100">Search Flights</button>
+    </div>
+</form>
 
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2025 SkyScanner Travel Search | Powered by <a href="https://rapidapi.com/" target="_blank">RapidAPI</a></p>
-            <small>Compare cheap flights, hotels and car rentals worldwide.</small>
-        </div>
-    </footer>
-
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Optional: Add loading spinner script -->
-    <script>
-        // Show spinner on form submit (optional)
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', function() {
-                const btn = form.querySelector('button[type="submit"]');
-                if (btn) {
-                    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Searching...';
-                    btn.disabled = true;
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+{% if results %}
+    <h3>Results (cheapest first)</h3>
+    <div class="list-group">
+        {% for flight in results %}
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between">
+                    <strong>{{ flight.airline }}</strong>
+                    <span class="badge bg-success">{{ flight.price }}</span>
+                </div>
+                <small>Depart: {{ flight.outbound_departure }} → Arrive: {{ flight.outbound_arrival }}</small><br>
+                {% if flight.inbound_departure %}
+                    <small>Return: {{ flight.inbound_departure }} → {{ flight.inbound_arrival }}</small>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% elif results is not none %}
+    <div class="alert alert-info">No flights found. Try different dates or airports.</div>
+{% endif %}
+{% endblock %}
