@@ -13,10 +13,62 @@
       <span class="logo-icon">✈️</span>
       <h1>Swift Travels</h1>
     </div>
-    <p class="tagline">Daily cheapest deals from Skyscanner</p>
+    <p class="tagline">Find your perfect trip</p>
   </header>
 
-  <main>
+  <!-- 🔍 Search Section -->
+  <section class="search-section">
+    <div class="search-card">
+      <h2>Search Flights</h2>
+      <form id="search-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="origin">From (IATA code)</label>
+            <input type="text" id="origin" placeholder="e.g. LHR" maxlength="3" required>
+          </div>
+          <div class="form-group">
+            <label for="destination">To (IATA code)</label>
+            <input type="text" id="destination" placeholder="e.g. CDG" maxlength="3" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="departure">Departure Date</label>
+            <input type="date" id="departure" required>
+          </div>
+          <div class="form-group">
+            <label for="passengers">Passengers</label>
+            <input type="number" id="passengers" min="1" max="9" value="1">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="currency">Currency</label>
+            <select id="currency">
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="GBP">GBP</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="cabin">Cabin Class</label>
+            <select id="cabin">
+              <option value="ECONOMY">Economy</option>
+              <option value="PREMIUM_ECONOMY">Premium Economy</option>
+              <option value="BUSINESS">Business</option>
+              <option value="FIRST">First</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="search-btn">🔍 Find Cheapest Flight</button>
+      </form>
+      <div id="search-results" class="search-results" style="display: none;"></div>
+    </div>
+  </section>
+
+  <!-- Daily Deals Section -->
+  <section class="daily-deals">
+    <h2>📆 Today's Top Deals (Auto‑updated Daily)</h2>
     <div class="deals-grid">
       <!-- Flight Card -->
       <div class="deal-card" id="flight-card">
@@ -54,11 +106,10 @@
         </div>
       </div>
     </div>
-
     <div class="update-info">
       <span id="update-time"></span>
     </div>
-  </main>
+  </section>
 
   <footer>
     <p>Powered by Skyscanner · Updated daily · <a href="https://github.com/YOUR_USERNAME/swift-travels" target="_blank">GitHub</a></p>
