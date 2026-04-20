@@ -1,22 +1,32 @@
 import os
 import requests
-from flask import import traceback
-from flask import render_template_string
-
-@app.errorhandler(500)
-def show_error(e):
-    return render_template_string(f"<pre style='background:#f8d7da;color:#721c24;padding:20px;'>{traceback.format_exc()}</pre>"), 500Flask, render_template, request, flash, redirect, url_for
+import traceback  # 👈 ADDED for error details
+from flask import Flask, render_template, request, flash, redirect, url_for, render_template_string  # 👈 ADDED render_template_string
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)  # For flashing messages
+app.secret_key = os.urandom(24)
 
+# ------------------------------------------------------------
+# ERROR HANDLER – shows detailed error in browser (REMOVE in production)
+# ------------------------------------------------------------
+@app.errorhandler(500)
+def internal_server_error(e):
+    tb = traceback.format_exc()
+    return render_template_string(f"""
+    <div style="background:#f8d7da; color:#721c24; padding:20px; margin:20px; border-radius:8px; font-family:monospace;">
+        <h2>🔥 Internal Server Error (500)</h2>
+        <pre style="background:#fff; padding:15px; overflow:auto;">{tb}</pre>
+        <p>Check your API keys, endpoints, or template syntax.</p>
+    </div>
+    """), 500
+
+# ------------------------------------------------------------
 RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
 RAPIDAPI_HOST = os.getenv("RAPIDAPI_HOST")
 
-# Headers for all RapidAPI requests
 HEADERS = {
     "X-RapidAPI-Key": RAPIDAPI_KEY,
     "X-RapidAPI-Host": RAPIDAPI_HOST,
@@ -45,7 +55,6 @@ def flights():
             flash('Please fill all required fields (origin, destination, departure date).', 'danger')
             return redirect(url_for('flights'))
         
-        # API endpoint for flight search (Skyscanner Travel)
         url = f"https://{RAPIDAPI_HOST}/flights/search"
         
         payload = {
@@ -61,8 +70,6 @@ def flights():
             response = requests.post(url, json=payload, headers=HEADERS)
             response.raise_for_status()
             data = response.json()
-            
-            # Extract relevant flight offers
             flights_data = parse_flight_results(data)
             return render_template('flights.html', results=flights_data, form_data=request.form)
         
@@ -73,16 +80,13 @@ def flights():
             flash(f'Unexpected error: {str(e)}', 'danger')
             return redirect(url_for('flights'))
     
-    # GET request – show empty search form
     return render_template('flights.html', results=None, form_data={})
 
 def parse_flight_results(data):
-    """Extract and format flight results from API response"""
     flights = []
     try:
-        # Structure varies by API; adapt based on actual response
         itineraries = data.get('itineraries', []) or data.get('data', {}).get('itineraries', [])
-        for itin in itineraries[:20]:  # limit to 20 results
+        for itin in itineraries[:20]:
             price = itin.get('price', {}).get('raw', 'N/A')
             outbound = itin.get('outbound', {})
             inbound = itin.get('inbound', {})
