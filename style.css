@@ -1,10 +1,96 @@
-body {
-  font-family: sans-serif;
-  background: #0a0e17;
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
+/* Copy the entire CSS from my previous premium answer (the long one with all sections) */
+/* I'll include the critical parts – ensure you have the full version */
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#0a0e17;color:#fff;line-height:1.5;overflow-x:hidden;position:relative;min-height:100vh}
+.bg-gradient{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 20% 30%,#1a2a4a 0%,#0a0e17 70%);z-index:-2}
+.bg-particles{position:fixed;top:0;left:0;width:100%;height:100%;background-image:radial-gradient(circle at 80% 20%,rgba(59,130,246,0.08) 0%,transparent 30%),radial-gradient(circle at 20% 80%,rgba(245,158,11,0.05) 0%,transparent 40%),radial-gradient(circle at 90% 70%,rgba(16,185,129,0.04) 0%,transparent 35%);z-index:-1}
+.navbar{padding:1.5rem 2rem;position:relative;z-index:100;backdrop-filter:blur(10px);background:rgba(10,14,23,0.7);border-bottom:1px solid rgba(255,255,255,0.05)}
+.nav-container{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-size:1.8rem;font-weight:600;letter-spacing:-0.02em}
+.nav-logo i{color:#3b82f6;font-size:2rem}
+.nav-links{display:flex;gap:3rem}
+.nav-links a{color:#a0b3d9;text-decoration:none;font-weight:500;transition:color 0.2s;font-size:1.05rem}
+.nav-links a:hover,.nav-links a.active{color:#fff}
+.nav-cta{background:linear-gradient(135deg,#2563eb,#1e40af);color:#fff;border:none;padding:0.8rem 2rem;border-radius:40px;font-weight:600;font-size:1rem;cursor:pointer;transition:all 0.2s;border:1px solid rgba(255,255,255,0.1)}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 10px 25px -5px #1e3a8a}
+.hero{padding:4rem 2rem 2rem;text-align:center;max-width:1000px;margin:0 auto}
+.hero-badge{display:inline-block;background:rgba(59,130,246,0.15);color:#60a5fa;padding:0.5rem 1.5rem;border-radius:40px;font-size:0.9rem;font-weight:600;letter-spacing:0.5px;margin-bottom:1.5rem;border:1px solid rgba(59,130,246,0.3);backdrop-filter:blur(4px)}
+.hero-title{font-size:4rem;font-weight:700;line-height:1.2;margin-bottom:1.5rem;letter-spacing:-0.03em}
+.gradient-text{background:linear-gradient(135deg,#a5d8ff,#3b82f6,#8b5cf6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-subtitle{font-size:1.25rem;color:#a0b3d9;max-width:600px;margin:0 auto}
+.search-section{padding:2rem 2rem 4rem}
+.search-container{max-width:900px;margin:0 auto;background:rgba(18,28,46,0.7);backdrop-filter:blur(16px);border-radius:40px;padding:3rem;border:1px solid rgba(255,255,255,0.08);box-shadow:0 25px 50px -12px rgba(0,0,0,0.5)}
+.search-header{text-align:center;margin-bottom:2.5rem}
+.search-header h2{font-size:2.2rem;font-weight:600;margin-bottom:0.5rem;display:flex;align-items:center;justify-content:center;gap:12px}
+.search-header h2 i{color:#3b82f6}
+.search-header p{color:#8896b0}
+.search-form{display:flex;flex-direction:column;gap:1.5rem}
+.form-row{display:flex;gap:1.5rem;flex-wrap:wrap}
+.form-group{flex:1;min-width:200px}
+.form-group label{display:block;margin-bottom:0.5rem;color:#bdd3ff;font-weight:500;font-size:0.9rem}
+.form-group label i{margin-right:6px;color:#3b82f6}
+.form-group input,.form-group select{width:100%;padding:1rem 1.2rem;background:rgba(10,18,30,0.8);border:1px solid #2a3a55;border-radius:20px;color:#fff;font-size:1rem;font-family:inherit;transition:all 0.2s}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:#3b82f6;background:#0f1a2b;box-shadow:0 0 0 3px rgba(59,130,246,0.2)}
+.search-btn{background:linear-gradient(135deg,#2563eb,#1e40af);color:#fff;border:none;padding:1.2rem;border-radius:40px;font-size:1.2rem;font-weight:600;cursor:pointer;transition:all 0.25s;margin-top:1rem;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;gap:10px}
+.search-btn:hover{background:linear-gradient(135deg,#3b82f6,#2563eb);transform:translateY(-3px);box-shadow:0 20px 30px -8px #1e3a8a}
+.search-results{margin-top:2.5rem;padding:2rem;background:rgba(8,16,28,0.6);backdrop-filter:blur(8px);border-radius:24px;border:1px solid rgba(255,255,255,0.05)}
+.result-card{text-align:center}
+.result-route{font-size:2rem;font-weight:700;margin-bottom:0.5rem;background:linear-gradient(to right,#fff,#bdd3ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.result-price{font-size:3.5rem;font-weight:800;color:#fbbf24;margin:1rem 0;text-shadow:0 2px 15px rgba(245,158,11,0.3)}
+.result-detail{color:#bdd3ff;margin-bottom:0.5rem;font-weight:500}
+.result-dates{color:#7f95c0;font-size:0.95rem;margin-bottom:1.5rem}
+.result-btn{display:inline-block;background:rgba(59,130,246,0.15);color:#bdd3ff;text-decoration:none;padding:0.8rem 2rem;border-radius:40px;font-weight:500;border:1px solid rgba(59,130,246,0.4);transition:all 0.2s;backdrop-filter:blur(4px)}
+.result-btn:hover{background:#2563eb;color:#fff;border-color:#60a5fa}
+.error-message{text-align:center;color:#f87171;padding:1rem}
+.error-message i{font-size:2rem;margin-bottom:0.5rem}
+.deals-section{padding:4rem 2rem}
+.deals-container{max-width:1300px;margin:0 auto}
+.section-header{text-align:center;margin-bottom:3.5rem}
+.section-badge{display:inline-block;background:rgba(245,158,11,0.15);color:#fbbf24;padding:0.4rem 1.2rem;border-radius:40px;font-size:0.85rem;font-weight:600;letter-spacing:0.5px;margin-bottom:1rem;border:1px solid rgba(245,158,11,0.3)}
+.section-header h2{font-size:3rem;font-weight:600;margin-bottom:0.5rem;letter-spacing:-0.02em}
+.section-header p{color:#8896b0;font-size:1.1rem}
+.deals-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem;margin-bottom:2.5rem}
+.deal-card{background:rgba(18,28,46,0.6);backdrop-filter:blur(12px);border-radius:36px;padding:2.5rem 2rem;border:1px solid rgba(255,255,255,0.06);transition:all 0.3s;text-align:center}
+.deal-card:hover{transform:translateY(-10px);background:rgba(25,38,60,0.7);border-color:rgba(59,130,246,0.3);box-shadow:0 30px 45px -15px #00000080}
+.card-icon{width:70px;height:70px;background:linear-gradient(145deg,#1e2b41,#0f172a);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;border:1px solid rgba(255,255,255,0.08)}
+.card-icon i{font-size:2.2rem;color:#60a5fa}
+.deal-card h3{font-size:1.5rem;font-weight:500;margin-bottom:1.5rem;color:#d6e5ff}
+.card-content{min-height:180px}
+.loading{display:flex;flex-direction:column;align-items:center;gap:15px;color:#94a3b8}
+.loader{width:40px;height:40px;border:3px solid rgba(255,255,255,0.05);border-top-color:#3b82f6;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.deal-route{font-size:2rem;font-weight:700;margin-bottom:0.5rem;background:linear-gradient(to right,#fff,#bdd3ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.deal-price{font-size:3rem;font-weight:800;color:#fbbf24;margin:1rem 0;text-shadow:0 2px 15px rgba(245,158,11,0.3)}
+.deal-detail{color:#bdd3ff;margin-bottom:0.5rem;font-weight:500}
+.deal-dates{color:#7f95c0;font-size:0.95rem;margin-bottom:1.5rem}
+.book-btn{display:inline-block;background:rgba(59,130,246,0.15);color:#bdd3ff;text-decoration:none;padding:0.7rem 1.8rem;border-radius:40px;font-weight:500;border:1px solid rgba(59,130,246,0.4);transition:all 0.2s;backdrop-filter:blur(4px)}
+.book-btn:hover{background:#2563eb;color:#fff;border-color:#60a5fa}
+.update-info{text-align:center;color:#5f7a9f;font-size:0.95rem;display:flex;align-items:center;justify-content:center;gap:8px}
+.features-section{padding:4rem 2rem;border-top:1px solid rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05)}
+.features-container{max-width:1200px;margin:0 auto;display:flex;justify-content:space-around;flex-wrap:wrap;gap:2rem}
+.feature-item{text-align:center;max-width:250px}
+.feature-item i{font-size:2.5rem;color:#3b82f6;margin-bottom:1rem}
+.feature-item h4{font-size:1.3rem;margin-bottom:0.5rem;font-weight:600}
+.feature-item p{color:#8896b0}
+.footer{padding:4rem 2rem 2rem;background:rgba(10,14,23,0.8);backdrop-filter:blur(8px)}
+.footer-container{max-width:1300px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-between;gap:3rem}
+.footer-brand{max-width:300px}
+.footer-brand i{font-size:2rem;color:#3b82f6;margin-right:10px}
+.footer-brand span{font-size:1.8rem;font-weight:600}
+.footer-brand p{margin-top:1rem;color:#7f95c0}
+.footer-links{display:flex;gap:4rem;flex-wrap:wrap}
+.link-group h5{font-size:1.1rem;margin-bottom:1.2rem;color:#d6e5ff}
+.link-group a{display:block;color:#8896b0;text-decoration:none;margin-bottom:0.8rem;transition:color 0.2s}
+.link-group a:hover{color:#fff}
+.footer-bottom{max-width:1300px;margin:3rem auto 0;padding-top:2rem;border-top:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;color:#5f7a9f}
+.social-icons{display:flex;gap:1.5rem}
+.social-icons a{color:#8896b0;font-size:1.3rem;transition:color 0.2s}
+.social-icons a:hover{color:#fff}
+@media (max-width:768px){
+  .nav-links{display:none}
+  .hero-title{font-size:2.5rem}
+  .search-container{padding:2rem 1.5rem}
+  .form-row{flex-direction:column;gap:1rem}
+  .section-header h2{font-size:2.2rem}
+  .deals-grid{grid-template-columns:1fr}
 }
