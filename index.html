@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swift Travels | Cheap Flights, Hotels & Cars</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <span class="logo-icon">✈️</span>
+      <h1>Swift Travels</h1>
+    </div>
+    <p class="tagline">Daily cheapest deals from Skyscanner</p>
+  </header>
+
+  <main>
+    <div class="deals-grid">
+      <!-- Flight Card -->
+      <div class="deal-card" id="flight-card">
+        <div class="card-header">
+          <span class="icon">✈️</span>
+          <h2>Cheapest Flight</h2>
+        </div>
+        <div class="card-body loading">
+          <div class="loader"></div>
+          <p>Finding best flight...</p>
+        </div>
+      </div>
+
+      <!-- Hotel Card -->
+      <div class="deal-card" id="hotel-card">
+        <div class="card-header">
+          <span class="icon">🏨</span>
+          <h2>Cheapest Hotel</h2>
+        </div>
+        <div class="card-body loading">
+          <div class="loader"></div>
+          <p>Finding best hotel...</p>
+        </div>
+      </div>
+
+      <!-- Car Hire Card -->
+      <div class="deal-card" id="car-card">
+        <div class="card-header">
+          <span class="icon">🚗</span>
+          <h2>Cheapest Car Hire</h2>
+        </div>
+        <div class="card-body loading">
+          <div class="loader"></div>
+          <p>Finding best car...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="update-info">
+      <span id="update-time"></span>
+    </div>
+  </main>
+
+  <footer>
+    <p>Powered by Skyscanner · Updated daily · <a href="https://github.com/YOUR_USERNAME/swift-travels" target="_blank">GitHub</a></p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
