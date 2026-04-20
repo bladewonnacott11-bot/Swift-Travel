@@ -1,16 +1,16 @@
 import os
 import requests
-import traceback  # 👈 ADDED for error details
-from flask import Flask, render_template, request, flash, redirect, url_for, render_template_string  # 👈 ADDED render_template_string
+import traceback
+from flask import Flask, render_template, request, flash, redirect, url_for, render_template_string
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = os.getenv("SECRET_KEY", os.urandom(24).hex())  # use env or random
 
 # ------------------------------------------------------------
-# ERROR HANDLER – shows detailed error in browser (REMOVE in production)
+# ERROR HANDLER – shows detailed error in browser
 # ------------------------------------------------------------
 @app.errorhandler(500)
 def internal_server_error(e):
@@ -24,6 +24,8 @@ def internal_server_error(e):
     """), 500
 
 # ------------------------------------------------------------
+# RapidAPI config (may be None if not set)
+# ------------------------------------------------------------
 RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
 RAPIDAPI_HOST = os.getenv("RAPIDAPI_HOST")
 
@@ -32,6 +34,33 @@ HEADERS = {
     "X-RapidAPI-Host": RAPIDAPI_HOST,
     "Content-Type": "application/json"
 }
+
+# Flag to use real API (set to True once endpoints are correct)
+USE_REAL_API = False  # Change to True when API is ready
+
+# ------------------------------------------------------------
+# Helper: Dummy data generators
+# ------------------------------------------------------------
+def get_dummy_flights(form_data):
+    return [
+        {'price': '$299', 'outbound_departure': '2025-06-01 08:00', 'outbound_arrival': '2025-06-01 11:00', 'inbound_departure': '', 'inbound_arrival': '', 'airline': 'SkyHigh Air'},
+        {'price': '$349', 'outbound_departure': '2025-06-01 14:00', 'outbound_arrival': '2025-06-01 17:00', 'inbound_departure': '', 'inbound_arrival': '', 'airline': 'JetStream'},
+        {'price': '$199', 'outbound_departure': '2025-06-02 06:00', 'outbound_arrival': '2025-06-02 09:00', 'inbound_departure': '', 'inbound_arrival': '', 'airline': 'BudgetWings'}
+    ]
+
+def get_dummy_hotels(form_data):
+    return [
+        {'name': 'Grand Plaza', 'price_per_night': '$150', 'rating': 4.8, 'address': '123 Main St'},
+        {'name': 'Cozy Inn', 'price_per_night': '$89', 'rating': 4.2, 'address': '456 Oak Ave'},
+        {'name': 'Luxury Suites', 'price_per_night': '$250', 'rating': 4.9, 'address': '789 Beach Rd'}
+    ]
+
+def get_dummy_cars(form_data):
+    return [
+        {'name': 'Toyota Corolla', 'price_per_day': '$45', 'supplier': 'Enterprise', 'transmission': 'Automatic'},
+        {'name': 'Honda Civic', 'price_per_day': '$50', 'supplier': 'Hertz', 'transmission': 'Manual'},
+        {'name': 'Tesla Model 3', 'price_per_day': '$120', 'supplier': 'Tesla Rentals', 'transmission': 'Automatic'}
+    ]
 
 # -------------------------------------------------------------------
 # Homepage
@@ -52,11 +81,17 @@ def flights():
         adults = request.form.get('adults', 1)
         
         if not all([origin, destination, depart_date]):
-            flash('Please fill all required fields (origin, destination, departure date).', 'danger')
+            flash('Please fill all required fields.', 'danger')
             return redirect(url_for('flights'))
         
-        url = f"https://{RAPIDAPI_HOST}/flights/search"
+        # Use dummy data if API not ready
+        if not USE_REAL_API or not RAPIDAPI_KEY:
+            flash('Using demo data (API not configured). To use real data, set USE_REAL_API=True and add valid API keys.', 'info')
+            flights_data = get_dummy_flights(request.form)
+            return render_template('flights.html', results=flights_data, form_data=request.form)
         
+        # Real API call (adjust endpoint as needed)
+        url = f"https://{RAPIDAPI_HOST}/flights/search"
         payload = {
             "origin": origin,
             "destination": destination,
@@ -65,20 +100,16 @@ def flights():
             "cabinClass": "economy",
             "currency": "USD"
         }
-        
         try:
-            response = requests.post(url, json=payload, headers=HEADERS)
+            response = requests.post(url, json=payload, headers=HEADERS, timeout=10)
             response.raise_for_status()
             data = response.json()
             flights_data = parse_flight_results(data)
             return render_template('flights.html', results=flights_data, form_data=request.form)
-        
-        except requests.exceptions.RequestException as e:
-            flash(f'API error: {str(e)}', 'danger')
-            return redirect(url_for('flights'))
         except Exception as e:
-            flash(f'Unexpected error: {str(e)}', 'danger')
-            return redirect(url_for('flights'))
+            flash(f'API error: {str(e)}. Using dummy data instead.', 'warning')
+            flights_data = get_dummy_flights(request.form)
+            return render_template('flights.html', results=flights_data, form_data=request.form)
     
     return render_template('flights.html', results=None, form_data={})
 
@@ -114,11 +145,15 @@ def hotels():
         guests = request.form.get('guests', 2)
         
         if not all([location, check_in, check_out]):
-            flash('Please fill all required fields (location, check-in, check-out).', 'danger')
+            flash('Please fill all required fields.', 'danger')
             return redirect(url_for('hotels'))
         
-        url = f"https://{RAPIDAPI_HOST}/hotels/search"
+        if not USE_REAL_API or not RAPIDAPI_KEY:
+            flash('Using demo hotel data.', 'info')
+            hotels_data = get_dummy_hotels(request.form)
+            return render_template('hotels.html', results=hotels_data, form_data=request.form)
         
+        url = f"https://{RAPIDAPI_HOST}/hotels/search"
         payload = {
             "location": location,
             "checkIn": check_in,
@@ -126,16 +161,16 @@ def hotels():
             "guests": int(guests),
             "currency": "USD"
         }
-        
         try:
-            response = requests.post(url, json=payload, headers=HEADERS)
+            response = requests.post(url, json=payload, headers=HEADERS, timeout=10)
             response.raise_for_status()
             data = response.json()
             hotels_data = parse_hotel_results(data)
             return render_template('hotels.html', results=hotels_data, form_data=request.form)
         except Exception as e:
-            flash(f'Error: {str(e)}', 'danger')
-            return redirect(url_for('hotels'))
+            flash(f'API error: {str(e)}. Using dummy data.', 'warning')
+            hotels_data = get_dummy_hotels(request.form)
+            return render_template('hotels.html', results=hotels_data, form_data=request.form)
     
     return render_template('hotels.html', results=None, form_data={})
 
@@ -169,8 +204,12 @@ def cars():
             flash('Please fill all required fields.', 'danger')
             return redirect(url_for('cars'))
         
-        url = f"https://{RAPIDAPI_HOST}/cars/search"
+        if not USE_REAL_API or not RAPIDAPI_KEY:
+            flash('Using demo car data.', 'info')
+            cars_data = get_dummy_cars(request.form)
+            return render_template('cars.html', results=cars_data, form_data=request.form)
         
+        url = f"https://{RAPIDAPI_HOST}/cars/search"
         payload = {
             "pickUpLocation": pickup_location,
             "dropOffLocation": dropoff_location,
@@ -178,16 +217,16 @@ def cars():
             "dropOffDate": dropoff_date,
             "currency": "USD"
         }
-        
         try:
-            response = requests.post(url, json=payload, headers=HEADERS)
+            response = requests.post(url, json=payload, headers=HEADERS, timeout=10)
             response.raise_for_status()
             data = response.json()
             cars_data = parse_car_results(data)
             return render_template('cars.html', results=cars_data, form_data=request.form)
         except Exception as e:
-            flash(f'Error: {str(e)}', 'danger')
-            return redirect(url_for('cars'))
+            flash(f'API error: {str(e)}. Using dummy data.', 'warning')
+            cars_data = get_dummy_cars(request.form)
+            return render_template('cars.html', results=cars_data, form_data=request.form)
     
     return render_template('cars.html', results=None, form_data={})
 
