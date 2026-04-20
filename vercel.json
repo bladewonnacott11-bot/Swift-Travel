@@ -1,7 +1,10 @@
 {
+  "functions": {
+    "api/*.py": {
+      "runtime": "python3.11"
+    }
+  },
   "buildCommand": "",
   "outputDirectory": ".",
-  "cleanUrls": true,
-  "framework": null,
-  "installCommand": ""
+  "cleanUrls": true
 }
