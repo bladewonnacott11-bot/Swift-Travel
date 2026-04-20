@@ -1,30 +1,31 @@
 import os
 import json
 import time
+import sys
 import requests
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any, List
 
-# Configuration (environment variables)
+# ------------------- Configuration -------------------
 RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
+if not RAPIDAPI_KEY:
+    print("ERROR: RAPIDAPI_KEY is not set.")
+    sys.exit(1)
+
 FLIGHT_ORIGIN = os.getenv("FLIGHT_ORIGIN", "LHR")
 FLIGHT_DESTINATION = os.getenv("FLIGHT_DESTINATION", "CDG")
 DEPART_DATE = os.getenv("FLIGHT_DEPART_DATE", "")
-RETURN_DATE = os.getenv("FLIGHT_RETURN_DATE", "")  # optional for round trip
 CURRENCY = os.getenv("CURRENCY", "USD")
 LOCALE = os.getenv("LOCALE", "en-US")
 MARKET = os.getenv("MARKET", "US")
 ADULTS = int(os.getenv("ADULTS", "1"))
 
-# Hotel search parameters
-HOTEL_CITY = os.getenv("HOTEL_CITY", "Paris")  # city name or IATA code
+HOTEL_CITY = os.getenv("HOTEL_CITY", "Paris")
 CHECKIN_DATE = os.getenv("CHECKIN_DATE", "")
 CHECKOUT_DATE = os.getenv("CHECKOUT_DATE", "")
 ROOMS = int(os.getenv("ROOMS", "1"))
 GUESTS = int(os.getenv("GUESTS", "2"))
 
-# Car hire parameters
-CAR_PICKUP_PLACE = os.getenv("CAR_PICKUP_PLACE", "CDG")  # airport code
+CAR_PICKUP_PLACE = os.getenv("CAR_PICKUP_PLACE", "CDG")
 CAR_DROPOFF_PLACE = os.getenv("CAR_DROPOFF_PLACE", "CDG")
 CAR_PICKUP_DATE = os.getenv("CAR_PICKUP_DATE", "")
 CAR_DROPOFF_DATE = os.getenv("CAR_DROPOFF_DATE", "")
@@ -49,11 +50,10 @@ HEADERS = {
     "Content-Type": "application/json"
 }
 
-# -------------------------------------------------------------------
-#  Helper functions
-# -------------------------------------------------------------------
-def make_request(method: str, endpoint: str, json_data: dict = None) -> dict:
+# ------------------- Helpers -------------------
+def make_request(method, endpoint, json_data=None):
     url = f"{BASE_URL}{endpoint}"
+    print(f"  → {method} {endpoint}")
     if method.upper() == "POST":
         resp = requests.post(url, headers=HEADERS, json=json_data, timeout=30)
     else:
@@ -61,7 +61,7 @@ def make_request(method: str, endpoint: str, json_data: dict = None) -> dict:
     resp.raise_for_status()
     return resp.json()
 
-def poll_until_complete(endpoint: str, session_token: str, max_attempts=10) -> Optional[dict]:
+def poll_until_complete(endpoint, session_token, max_attempts=10):
     poll_url = f"{endpoint}/{session_token}"
     for attempt in range(max_attempts):
         time.sleep(2)
@@ -72,11 +72,9 @@ def poll_until_complete(endpoint: str, session_token: str, max_attempts=10) -> O
         print(f"    Polling {endpoint.split('/')[-2]} ({attempt+1}/{max_attempts})...")
     return None
 
-# -------------------------------------------------------------------
-#  Flights
-# -------------------------------------------------------------------
-def fetch_cheapest_flight() -> Optional[Dict[str, Any]]:
-    print(f"✈️  Searching flights: {FLIGHT_ORIGIN} → {FLIGHT_DESTINATION} on {DEPART_DATE}")
+# ------------------- Flights -------------------
+def fetch_cheapest_flight():
+    print(f"\n✈️  Searching flights: {FLIGHT_ORIGIN} → {FLIGHT_DESTINATION} on {DEPART_DATE}")
     payload = {
         "query": {
             "market": MARKET,
@@ -95,18 +93,18 @@ def fetch_cheapest_flight() -> Optional[Dict[str, Any]]:
             "cabinClass": "CABIN_CLASS_ECONOMY"
         }
     }
-    create_resp = make_request("POST", "/flights/live/search/create", payload)
-    token = create_resp.get("sessionToken")
-    if not token:
-        print("    ❌ No session token")
-        return None
-
-    data = poll_until_complete("/flights/live/search/poll", token)
-    if not data:
-        return None
-
-    # Extract cheapest
     try:
+        create_resp = make_request("POST", "/flights/live/search/create", payload)
+        token = create_resp.get("sessionToken")
+        if not token:
+            print("    ❌ No session token")
+            return None
+
+        data = poll_until_complete("/flights/live/search/poll", token)
+        if not data:
+            print("    ❌ Polling timeout")
+            return None
+
         itineraries = data.get("content", {}).get("results", {}).get("itineraries", {})
         flights = []
         for bucket in itineraries.values():
@@ -123,15 +121,15 @@ def fetch_cheapest_flight() -> Optional[Dict[str, Any]]:
             cheapest["depart_date"] = DEPART_DATE
             print(f"    ✅ Found: {cheapest['price']:.2f} {cheapest['currency']} on {cheapest['airline']}")
             return cheapest
+        else:
+            print("    ⚠️ No flight itineraries found")
     except Exception as e:
-        print(f"    ❌ Error extracting flight: {e}")
+        print(f"    ❌ Error: {e}")
     return None
 
-# -------------------------------------------------------------------
-#  Hotels
-# -------------------------------------------------------------------
-def fetch_cheapest_hotel() -> Optional[Dict[str, Any]]:
-    print(f"🏨 Searching hotels in {HOTEL_CITY} ({CHECKIN_DATE} to {CHECKOUT_DATE})")
+# ------------------- Hotels -------------------
+def fetch_cheapest_hotel():
+    print(f"\n🏨 Searching hotels in {HOTEL_CITY} ({CHECKIN_DATE} to {CHECKOUT_DATE})")
     payload = {
         "query": {
             "market": MARKET,
@@ -146,19 +144,21 @@ def fetch_cheapest_hotel() -> Optional[Dict[str, Any]]:
             }
         }
     }
-    create_resp = make_request("POST", "/hotels/live/search/create", payload)
-    token = create_resp.get("sessionToken")
-    if not token:
-        print("    ❌ No session token")
-        return None
-
-    data = poll_until_complete("/hotels/live/search/poll", token)
-    if not data:
-        return None
-
     try:
+        create_resp = make_request("POST", "/hotels/live/search/create", payload)
+        token = create_resp.get("sessionToken")
+        if not token:
+            print("    ❌ No session token")
+            return None
+
+        data = poll_until_complete("/hotels/live/search/poll", token)
+        if not data:
+            print("    ❌ Polling timeout")
+            return None
+
         hotels = data.get("content", {}).get("results", {}).get("hotels", [])
         if not hotels:
+            print("    ⚠️ No hotels found")
             return None
         cheapest = min(hotels, key=lambda h: float(h.get("price", {}).get("total", 999999)))
         price_info = cheapest.get("price", {})
@@ -174,14 +174,12 @@ def fetch_cheapest_hotel() -> Optional[Dict[str, Any]]:
         print(f"    ✅ Found: {result['price']:.2f} {result['currency']} at {result['name']}")
         return result
     except Exception as e:
-        print(f"    ❌ Error extracting hotel: {e}")
+        print(f"    ❌ Error: {e}")
     return None
 
-# -------------------------------------------------------------------
-#  Car Hire
-# -------------------------------------------------------------------
-def fetch_cheapest_car() -> Optional[Dict[str, Any]]:
-    print(f"🚗 Searching car hire: {CAR_PICKUP_PLACE} from {CAR_PICKUP_DATE} to {CAR_DROPOFF_DATE}")
+# ------------------- Cars -------------------
+def fetch_cheapest_car():
+    print(f"\n🚗 Searching car hire: {CAR_PICKUP_PLACE} from {CAR_PICKUP_DATE} to {CAR_DROPOFF_DATE}")
     payload = {
         "query": {
             "market": MARKET,
@@ -194,20 +192,21 @@ def fetch_cheapest_car() -> Optional[Dict[str, Any]]:
             "driverAge": DRIVER_AGE
         }
     }
-    create_resp = make_request("POST", "/carhire/live/search/create", payload)
-    token = create_resp.get("sessionToken")
-    if not token:
-        print("    ❌ No session token")
-        return None
-
-    data = poll_until_complete("/carhire/live/search/poll", token)
-    if not data:
-        return None
-
     try:
-        results = data.get("content", {}).get("results", {})
-        cars = results.get("cars", [])
+        create_resp = make_request("POST", "/carhire/live/search/create", payload)
+        token = create_resp.get("sessionToken")
+        if not token:
+            print("    ❌ No session token")
+            return None
+
+        data = poll_until_complete("/carhire/live/search/poll", token)
+        if not data:
+            print("    ❌ Polling timeout")
+            return None
+
+        cars = data.get("content", {}).get("results", {}).get("cars", [])
         if not cars:
+            print("    ⚠️ No cars found")
             return None
         cheapest = min(cars, key=lambda c: float(c.get("price", {}).get("total", 999999)))
         price_info = cheapest.get("price", {})
@@ -227,17 +226,11 @@ def fetch_cheapest_car() -> Optional[Dict[str, Any]]:
         print(f"    ✅ Found: {result['price']:.2f} {result['currency']} from {supplier} ({vehicle})")
         return result
     except Exception as e:
-        print(f"    ❌ Error extracting car: {e}")
+        print(f"    ❌ Error: {e}")
     return None
 
-# -------------------------------------------------------------------
-#  Main
-# -------------------------------------------------------------------
+# ------------------- Main -------------------
 def main():
-    if not RAPIDAPI_KEY:
-        print("ERROR: RAPIDAPI_KEY not set")
-        return
-
     print("=" * 50)
     print("🛫 Swift Travels – Fetching Deals")
     print("=" * 50)
@@ -249,21 +242,24 @@ def main():
         "cars": None
     }
 
-    # Fetch flights
+    # Flights (required)
     deals["flights"] = fetch_cheapest_flight()
+    if not deals["flights"]:
+        print("\n❌ Failed to fetch flight deals. Exiting.")
+        sys.exit(1)
 
-    # Fetch hotels
+    # Hotels (optional – skip if fails)
     deals["hotels"] = fetch_cheapest_hotel()
 
-    # Fetch cars
+    # Cars (optional – skip if fails)
     deals["cars"] = fetch_cheapest_car()
 
-    # Save to JSON
+    # Save
     os.makedirs("data", exist_ok=True)
     with open("data/deals.json", "w") as f:
         json.dump(deals, f, indent=2)
 
-    print("\n✅ All deals saved to data/deals.json")
+    print("\n✅ Deals saved to data/deals.json")
 
 if __name__ == "__main__":
     main()
