@@ -1,6 +1,11 @@
 import os
 import requests
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import import traceback
+from flask import render_template_string
+
+@app.errorhandler(500)
+def show_error(e):
+    return render_template_string(f"<pre style='background:#f8d7da;color:#721c24;padding:20px;'>{traceback.format_exc()}</pre>"), 500Flask, render_template, request, flash, redirect, url_for
 from dotenv import load_dotenv
 
 load_dotenv()
