@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>✈️ Search Cheap Flights</h2>
+<form method="POST" class="row g-3 mb-4">
+    <div class="col-md-3">
+        <label>Origin (IATA code)</label>
+        <input type="text" name="origin" class="form-control" placeholder="LHR" value="{{ form_data.origin or '' }}" required>
+    </div>
+    <div class="col-md-3">
+        <label>Destination (IATA)</label>
+        <input type="text" name="destination" class="form-control" placeholder="JFK" value="{{ form_data.destination or '' }}" required>
+    </div>
+    <div class="col-md-2">
+        <label>Departure Date</label>
+        <input type="date" name="depart_date" class="form-control" value="{{ form_data.depart_date or '' }}" required>
+    </div>
+    <div class="col-md-2">
+        <label>Adults</label>
+        <input type="number" name="adults" class="form-control" value="{{ form_data.adults or 1 }}" min="1" required>
+    </div>
+    <div class="col-md-2 align-self-end">
+        <button type="submit" class="btn btn-primary w-100">Search Flights</button>
+    </div>
+</form>
+
+{% if results %}
+    <h3>Results (cheapest first)</h3>
+    <div class="list-group">
+        {% for flight in results %}
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between">
+                    <strong>{{ flight.airline }}</strong>
+                    <span class="badge bg-success">{{ flight.price }}</span>
+                </div>
+                <small>Depart: {{ flight.outbound_departure }} → Arrive: {{ flight.outbound_arrival }}</small><br>
+                {% if flight.inbound_departure %}
+                    <small>Return: {{ flight.inbound_departure }} → {{ flight.inbound_arrival }}</small>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% elif results is not none %}
+    <div class="alert alert-info">No flights found. Try different dates or airports.</div>
+{% endif %}
+{% endblock %}
