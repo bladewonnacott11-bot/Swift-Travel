@@ -10,20 +10,6 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", os.urandom(24).hex())
 
 # ------------------------------------------------------------
-# GLOBAL ERROR HANDLER – shows error in browser
-# ------------------------------------------------------------
-@app.errorhandler(Exception)
-def handle_all_exceptions(e):
-    tb = traceback.format_exc()
-    return f"""
-    <div style="background:#f8d7da; color:#721c24; padding:20px; margin:20px; font-family:monospace;">
-        <h2>🔥 Internal Server Error</h2>
-        <pre style="background:#fff; padding:15px; overflow:auto;">{tb}</pre>
-        <p>Check your API keys, endpoints, or template syntax.</p>
-    </div>
-    """, 500
-
-# ------------------------------------------------------------
 # Favicon route – prevents 500 error for /favicon.ico
 # ------------------------------------------------------------
 @app.route('/favicon.ico')
