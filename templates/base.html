@@ -150,6 +150,62 @@
             outline: none;
         }
 
+        /* ---------- FLIGHT RESULTS (Result Box) ---------- */
+        .results-container {
+            margin-top: 2rem;
+            padding: 1rem 0;
+        }
+        .flight-card {
+            background: white;
+            border-radius: 24px;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            border: 1px solid #eef2f6;
+        }
+        .flight-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+        .flight-card .airline-logo {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
+        .flight-card .price {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--success);
+        }
+        .flight-card .times {
+            display: flex;
+            justify-content: space-between;
+            text-align: center;
+            margin: 1rem 0;
+        }
+        .flight-card .skyscanner-link {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            text-align: center;
+            width: 100%;
+        }
+        .flight-card .skyscanner-link:hover {
+            background: var(--primary-dark);
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(13,110,253,0.3);
+        }
+        .loading-spinner {
+            text-align: center;
+            padding: 2rem;
+        }
+
         /* ---------- FLASH TOASTS (Elegant) ---------- */
         .toast-premium {
             background: rgba(0,0,0,0.85);
@@ -218,6 +274,10 @@
             .jumbotron-premium {
                 padding: 1.5rem;
             }
+            .flight-card .times {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
         }
     </style>
 </head>
@@ -272,7 +332,14 @@
             {% endif %}
         {% endwith %}
 
+        <!-- The content block (where the search form goes) -->
         {% block content %}{% endblock %}
+
+        <!-- Global Results Container (hidden by default, shown when flight search is performed) -->
+        <div id="global-flight-results" class="results-container" style="display: none;">
+            <h3 class="mb-3">✈️ Available Flights</h3>
+            <div id="global-flight-results-list"></div>
+        </div>
     </main>
 
     <!-- Premium Footer -->
@@ -310,7 +377,7 @@
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Premium Scripts (Loading Spinner, Toasts) -->
+    <!-- Global Script for Flight Search (AJAX) -->
     <script>
         (function() {
             // Initialize Bootstrap toasts
@@ -319,8 +386,56 @@
                 new bootstrap.Toast(toastEl, { autohide: true, delay: 5000 }).show();
             });
 
-            // Premium loading spinner on all forms
-            document.querySelectorAll('form').forEach(form => {
+            // Find any form that has the class "flight-search-ajax" or id "flight-search-form"
+            const flightForm = document.querySelector('#flight-search-form, .flight-search-ajax');
+            if (flightForm) {
+                const resultsContainer = document.getElementById('global-flight-results');
+                const resultsList = document.getElementById('global-flight-results-list');
+
+                flightForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();  // Prevent normal form submission
+
+                    // Show loading indicator
+                    resultsList.innerHTML = `
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <p class="mt-2">Searching for flights...</p>
+                        </div>
+                    `;
+                    resultsContainer.style.display = 'block';
+
+                    const formData = new FormData(flightForm);
+
+                    try {
+                        const response = await fetch('/search/flights', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error ${response.status}`);
+                        }
+
+                        const html = await response.text();
+                        // Parse the returned HTML (which should be flight_results.html)
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        // Look for the row containing flight cards
+                        const flightsList = doc.querySelector('.results-container .row') || doc.querySelector('.row');
+                        if (flightsList && flightsList.innerHTML.trim() !== '') {
+                            resultsList.innerHTML = flightsList.innerHTML;
+                        } else {
+                            resultsList.innerHTML = '<div class="alert alert-info">No flights found. Try different dates or destinations.</div>';
+                        }
+                    } catch (error) {
+                        console.error('Error fetching flights:', error);
+                        resultsList.innerHTML = '<div class="alert alert-danger">Unable to fetch flights. Please try again later.</div>';
+                    }
+                });
+            }
+
+            // Premium loading spinner on all other forms (non-flight forms)
+            document.querySelectorAll('form:not(#flight-search-form):not(.flight-search-ajax)').forEach(form => {
                 form.addEventListener('submit', function(e) {
                     const submitBtn = form.querySelector('button[type="submit"]');
                     if (submitBtn && !submitBtn.disabled) {
