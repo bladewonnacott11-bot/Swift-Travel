@@ -16,8 +16,8 @@
             </div>
         </div>
 
-        <!-- FLIGHT FORM -->
-        <form id="flight-form" action="/search/flights" method="POST" class="search-form">
+        <!-- FLIGHT FORM (AJAX – results appear below) -->
+        <form id="flight-form" method="POST" class="search-form">
             <div class="row g-3">
                 <div class="col-12 col-md-5">
                     <label class="form-label">From (Country/City)</label>
@@ -40,12 +40,18 @@
                     <input type="number" name="maxPrice" class="form-control form-control-premium" placeholder="e.g., 500" min="0" step="10">
                 </div>
                 <div class="col-12 d-grid">
-                    <button type="submit" class="btn-premium w-100 mt-3">Search Flights on Skyscanner</button>
+                    <button type="submit" class="btn-premium w-100 mt-3">Search Flights</button>
                 </div>
             </div>
         </form>
 
-        <!-- HOTEL FORM -->
+        <!-- Result box for flights -->
+        <div id="flight-results" class="results-container mt-4" style="display: none;">
+            <h3 class="mb-3">✈️ Available Flights</h3>
+            <div id="flight-results-list"></div>
+        </div>
+
+        <!-- HOTEL FORM (direct redirect) -->
         <form id="hotel-form" action="/search/hotels" method="POST" class="search-form" style="display: none;">
             <div class="row g-3">
                 <div class="col-12 col-md-6">
@@ -74,7 +80,7 @@
             </div>
         </form>
 
-        <!-- CAR FORM -->
+        <!-- CAR FORM (direct redirect) -->
         <form id="car-form" action="/search/cars" method="POST" class="search-form" style="display: none;">
             <div class="row g-3">
                 <div class="col-12 col-md-5">
@@ -105,7 +111,7 @@
     </div>
 </div>
 
-<!-- Popular Destinations Section -->
+<!-- The rest of your sections (Popular Destinations, Travel Tips, Testimonials, Newsletter) remain unchanged -->
 <div class="row mt-5 g-4">
     <div class="col-12 text-center mb-3">
         <h2 class="fw-bold">🔥 Popular Destinations</h2>
@@ -141,7 +147,6 @@
     </div>
 </div>
 
-<!-- Travel Tips Section -->
 <div class="row mt-5 g-4">
     <div class="col-12 text-center mb-3">
         <h2 class="fw-bold">💡 Travel Smarter</h2>
@@ -170,7 +175,6 @@
     </div>
 </div>
 
-<!-- Testimonials Section -->
 <div class="row mt-5 g-4">
     <div class="col-12 text-center mb-3">
         <h2 class="fw-bold">⭐ What Travelers Say</h2>
@@ -199,7 +203,6 @@
     </div>
 </div>
 
-<!-- Newsletter Signup -->
 <div class="row mt-5">
     <div class="col-12">
         <div class="premium-card p-4 text-center" style="background: linear-gradient(135deg, #0d6efd, #0a58ca); color: white;">
@@ -219,6 +222,7 @@
 </div>
 
 <script>
+    // Toggle between forms
     const btnFlight = document.getElementById('btn-flight');
     const btnHotel = document.getElementById('btn-hotel');
     const btnCar = document.getElementById('btn-car');
@@ -231,10 +235,47 @@
         activeBtn.classList.add('active');
         [flightForm, hotelForm, carForm].forEach(form => form.style.display = 'none');
         activeForm.style.display = 'block';
+        // Hide results when switching tabs
+        document.getElementById('flight-results').style.display = 'none';
     }
 
     btnFlight.addEventListener('click', () => setActive(btnFlight, flightForm));
     btnHotel.addEventListener('click', () => setActive(btnHotel, hotelForm));
     btnCar.addEventListener('click', () => setActive(btnCar, carForm));
+
+    // Handle flight form via AJAX
+    flightForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(flightForm);
+        const resultsContainer = document.getElementById('flight-results');
+        const resultsList = document.getElementById('flight-results-list');
+
+        // Show loading indicator
+        resultsList.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Searching for flights...</p></div>';
+        resultsContainer.style.display = 'block';
+
+        try {
+            const response = await fetch('/search/flights', {
+                method: 'POST',
+                body: formData
+            });
+            const html = await response.text();
+            // The response is the flight_results.html rendered by the server
+            // We extract the relevant part (the list of flights) and inject it
+            // A simpler approach: let the server return JSON. But for now we'll inject the whole results list.
+            // Create a temporary div to parse the HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            const flightsList = tempDiv.querySelector('.results-container') || tempDiv.querySelector('.row');
+            if (flightsList) {
+                resultsList.innerHTML = flightsList.innerHTML;
+            } else {
+                resultsList.innerHTML = '<div class="alert alert-info">No flights found. Try different dates or destinations.</div>';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            resultsList.innerHTML = '<div class="alert alert-danger">Unable to fetch flights. Please try again later.</div>';
+        }
+    });
 </script>
 {% endblock %}
