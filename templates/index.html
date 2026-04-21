@@ -4,7 +4,7 @@
     <h1 class="display-4 fw-bold mb-3">Find Your Perfect Trip</h1>
     <p class="lead mb-4">Search flights, hotels, or car rentals – all in one place</p>
 
-    <div class="premium-card p-4" style="max-width: 900px; margin: 0 auto;">
+    <div class="premium-card p-4" style="max-width: 1000px; margin: 0 auto;">
         <div class="mb-4">
             <label class="form-label fw-semibold">I want to book:</label>
             <div class="btn-group w-100" role="group">
@@ -14,7 +14,7 @@
             </div>
         </div>
 
-        <!-- Flight Form – submits to backend for clean redirect -->
+        <!-- FLIGHT FORM with Max Price -->
         <form id="flight-form" action="/search/flights" method="POST" class="search-form">
             <div class="row g-3">
                 <div class="col-12 col-md-5">
@@ -27,11 +27,16 @@
                 </div>
                 <div class="col-6 col-md-2">
                     <label class="form-label">Departure Date</label>
-                    <input type="date" name="departureDate" class="form-control form-control-premium" required style="min-width: 0;">
+                    <input type="date" name="departureDate" class="form-control form-control-premium" required>
                 </div>
                 <div class="col-6 col-md-2">
                     <label class="form-label">Adults</label>
                     <input type="number" name="adults" class="form-control form-control-premium" value="1" min="1">
+                </div>
+                <!-- MAX PRICE for flights -->
+                <div class="col-12 col-md-3">
+                    <label class="form-label">💰 Max Price (USD)</label>
+                    <input type="number" name="maxPrice" class="form-control form-control-premium" placeholder="e.g., 500" min="0" step="10">
                 </div>
                 <div class="col-12 d-grid">
                     <button type="submit" class="btn-premium w-100 mt-3">Search Flights on Skyscanner</button>
@@ -39,7 +44,7 @@
             </div>
         </form>
 
-        <!-- Hotel Form -->
+        <!-- HOTEL FORM with Max Price -->
         <form id="hotel-form" action="/search/hotels" method="POST" class="search-form" style="display: none;">
             <div class="row g-3">
                 <div class="col-12 col-md-6">
@@ -54,9 +59,14 @@
                     <label class="form-label">Check-out</label>
                     <input type="date" name="checkOut" class="form-control form-control-premium" required>
                 </div>
-                <div class="col-12 col-md-2">
+                <div class="col-6 col-md-2">
                     <label class="form-label">Guests</label>
                     <input type="number" name="guests" class="form-control form-control-premium" value="2" min="1">
+                </div>
+                <!-- MAX PRICE for hotels -->
+                <div class="col-6 col-md-3">
+                    <label class="form-label">💰 Max Price per Night (USD)</label>
+                    <input type="number" name="maxPrice" class="form-control form-control-premium" placeholder="e.g., 200" min="0" step="10">
                 </div>
                 <div class="col-12 d-grid">
                     <button type="submit" class="btn-premium w-100 mt-3">Search Hotels on Skyscanner</button>
@@ -64,7 +74,7 @@
             </div>
         </form>
 
-        <!-- Car Form -->
+        <!-- CAR FORM with Max Price -->
         <form id="car-form" action="/search/cars" method="POST" class="search-form" style="display: none;">
             <div class="row g-3">
                 <div class="col-12 col-md-5">
@@ -82,6 +92,11 @@
                 <div class="col-6 col-md-2">
                     <label class="form-label">Drop-off Date</label>
                     <input type="date" name="dropoffDate" class="form-control form-control-premium" required>
+                </div>
+                <!-- MAX PRICE for cars -->
+                <div class="col-12 col-md-3">
+                    <label class="form-label">💰 Max Price per Day (USD)</label>
+                    <input type="number" name="maxPrice" class="form-control form-control-premium" placeholder="e.g., 80" min="0" step="10">
                 </div>
                 <div class="col-12 d-grid">
                     <button type="submit" class="btn-premium w-100 mt-3">Search Cars on Skyscanner</button>
