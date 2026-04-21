@@ -47,7 +47,7 @@
             flex-direction: column;
         }
 
-        /* ---------- NAVBAR (Luxury Glass) ---------- */
+        /* ---------- NAVBAR ---------- */
         .navbar-premium {
             background: rgba(13, 110, 253, 0.95) !important;
             backdrop-filter: blur(12px);
@@ -85,7 +85,7 @@
             flex: 1;
         }
 
-        /* ---------- PREMIUM CARDS (Glassmorphism) ---------- */
+        /* ---------- PREMIUM CARDS ---------- */
         .premium-card {
             background: var(--glass-bg);
             backdrop-filter: blur(10px);
@@ -101,7 +101,7 @@
             background: rgba(255,255,255,0.98);
         }
 
-        /* ---------- BUTTONS (Premium) ---------- */
+        /* ---------- BUTTONS ---------- */
         .btn-premium {
             background: var(--primary);
             color: white;
@@ -120,22 +120,8 @@
             box-shadow: 0 8px 20px rgba(13,110,253,0.3);
             color: white;
         }
-        .btn-outline-premium {
-            background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-            border-radius: 40px;
-            padding: 0.5rem 1.3rem;
-            font-weight: 600;
-            transition: var(--transition);
-        }
-        .btn-outline-premium:hover {
-            background: var(--primary);
-            color: white;
-            transform: translateY(-2px);
-        }
 
-        /* ---------- FORM CONTROLS (Modern) ---------- */
+        /* ---------- FORM CONTROLS ---------- */
         .form-control-premium {
             border-radius: 60px;
             padding: 0.7rem 1.2rem;
@@ -150,11 +136,7 @@
             outline: none;
         }
 
-        /* ---------- FLIGHT RESULTS (Result Box) ---------- */
-        .results-container {
-            margin-top: 2rem;
-            padding: 1rem 0;
-        }
+        /* ---------- FLIGHT RESULTS (for results page) ---------- */
         .flight-card {
             background: white;
             border-radius: 24px;
@@ -167,22 +149,6 @@
         .flight-card:hover {
             transform: translateY(-3px);
             box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-        }
-        .flight-card .airline-logo {
-            width: 50px;
-            height: 50px;
-            object-fit: contain;
-        }
-        .flight-card .price {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--success);
-        }
-        .flight-card .times {
-            display: flex;
-            justify-content: space-between;
-            text-align: center;
-            margin: 1rem 0;
         }
         .flight-card .skyscanner-link {
             display: inline-block;
@@ -199,14 +165,9 @@
         .flight-card .skyscanner-link:hover {
             background: var(--primary-dark);
             transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(13,110,253,0.3);
-        }
-        .loading-spinner {
-            text-align: center;
-            padding: 2rem;
         }
 
-        /* ---------- FLASH TOASTS (Elegant) ---------- */
+        /* ---------- TOASTS ---------- */
         .toast-premium {
             background: rgba(0,0,0,0.85);
             backdrop-filter: blur(12px);
@@ -217,7 +178,7 @@
             box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
         }
 
-        /* ---------- FOOTER (Premium Dark) ---------- */
+        /* ---------- FOOTER ---------- */
         .footer-premium {
             background: #0f172a;
             color: #cbd5e1;
@@ -239,7 +200,7 @@
             margin-bottom: 1rem;
         }
 
-        /* ---------- JUMBOTRON (Hero Section) ---------- */
+        /* ---------- JUMBOTRON ---------- */
         .jumbotron-premium {
             background: linear-gradient(120deg, #ffffff 0%, #f1f5f9 100%);
             border-radius: 2rem;
@@ -250,14 +211,8 @@
 
         /* ---------- ANIMATIONS ---------- */
         @keyframes fadeSlideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade {
             animation: fadeSlideUp 0.5s ease-out forwards;
@@ -274,10 +229,6 @@
             .jumbotron-premium {
                 padding: 1.5rem;
             }
-            .flight-card .times {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
         }
     </style>
 </head>
@@ -289,31 +240,23 @@
             <a class="navbar-brand" href="/">
                 <i class="fas fa-plane-departure me-2"></i>Swift Travels
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarMain">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/flights"><i class="fas fa-search"></i>Flights</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/hotels"><i class="fas fa-hotel"></i>Hotels</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/cars"><i class="fas fa-car"></i>Cars</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/flights"><i class="fas fa-search"></i>Flights</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/hotels"><i class="fas fa-hotel"></i>Hotels</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/cars"><i class="fas fa-car"></i>Cars</a></li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content with Fade Animation -->
+    <!-- Main Content -->
     <main class="container my-5 animate-fade">
-        <!-- Flash Messages (Premium Toasts) -->
+        <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
@@ -332,14 +275,8 @@
             {% endif %}
         {% endwith %}
 
-        <!-- The content block (where the search form goes) -->
+        <!-- Page content goes here -->
         {% block content %}{% endblock %}
-
-        <!-- Global Results Container (hidden by default, shown when flight search is performed) -->
-        <div id="global-flight-results" class="results-container" style="display: none;">
-            <h3 class="mb-3">✈️ Available Flights</h3>
-            <div id="global-flight-results-list"></div>
-        </div>
     </main>
 
     <!-- Premium Footer -->
@@ -377,87 +314,16 @@
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Global Script for Flight Search (AJAX) -->
+    <!-- Simple script to initialise toasts (no AJAX interference) -->
     <script>
         (function() {
-            // Initialize Bootstrap toasts
             var toastElList = [].slice.call(document.querySelectorAll('.toast'));
             toastElList.forEach(function(toastEl) {
                 new bootstrap.Toast(toastEl, { autohide: true, delay: 5000 }).show();
             });
-
-            // Find any form that has the class "flight-search-ajax" or id "flight-search-form"
-            const flightForm = document.querySelector('#flight-search-form, .flight-search-ajax');
-            if (flightForm) {
-                const resultsContainer = document.getElementById('global-flight-results');
-                const resultsList = document.getElementById('global-flight-results-list');
-
-                flightForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();  // Prevent normal form submission
-
-                    // Show loading indicator
-                    resultsList.innerHTML = `
-                        <div class="text-center py-4">
-                            <div class="spinner-border text-primary" role="status"></div>
-                            <p class="mt-2">Searching for flights...</p>
-                        </div>
-                    `;
-                    resultsContainer.style.display = 'block';
-
-                    const formData = new FormData(flightForm);
-
-                    try {
-                        const response = await fetch('/search/flights', {
-                            method: 'POST',
-                            body: formData
-                        });
-
-                        if (!response.ok) {
-                            throw new Error(`HTTP error ${response.status}`);
-                        }
-
-                        const html = await response.text();
-                        // Parse the returned HTML (which should be flight_results.html)
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-                        // Look for the row containing flight cards
-                        const flightsList = doc.querySelector('.results-container .row') || doc.querySelector('.row');
-                        if (flightsList && flightsList.innerHTML.trim() !== '') {
-                            resultsList.innerHTML = flightsList.innerHTML;
-                        } else {
-                            resultsList.innerHTML = '<div class="alert alert-info">No flights found. Try different dates or destinations.</div>';
-                        }
-                    } catch (error) {
-                        console.error('Error fetching flights:', error);
-                        resultsList.innerHTML = '<div class="alert alert-danger">Unable to fetch flights. Please try again later.</div>';
-                    }
-                });
-            }
-
-            // Premium loading spinner on all other forms (non-flight forms)
-            document.querySelectorAll('form:not(#flight-search-form):not(.flight-search-ajax)').forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    const submitBtn = form.querySelector('button[type="submit"]');
-                    if (submitBtn && !submitBtn.disabled) {
-                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Searching...';
-                        submitBtn.disabled = true;
-                    }
-                });
-            });
-
-            // Smooth scroll for anchor links
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function(e) {
-                    const target = document.querySelector(this.getAttribute('href'));
-                    if (target) {
-                        e.preventDefault();
-                        target.scrollIntoView({ behavior: 'smooth' });
-                    }
-                });
-            });
         })();
     </script>
-    
+
     {% block scripts %}{% endblock %}
 </body>
 </html>
