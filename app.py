@@ -1,241 +1,181 @@
 import os
-import requests
+import logging
 import traceback
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from dotenv import load_dotenv
 
+# Load environment variables
 load_dotenv()
 
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+# Initialize Flask app
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", os.urandom(24).hex())
 
 # ------------------------------------------------------------
-# Favicon route – prevents 500 error for /favicon.ico
-# ------------------------------------------------------------
-@app.route('/favicon.ico')
-def favicon():
-    return '', 204   # No content, no error
-
-# ------------------------------------------------------------
-# RapidAPI config
+# Environment validation (with helpful warnings)
 # ------------------------------------------------------------
 RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
 RAPIDAPI_HOST = os.getenv("RAPIDAPI_HOST", "skyscanner89.p.rapidapi.com")
 
-HEADERS = {
-    "X-RapidAPI-Key": RAPIDAPI_KEY,
-    "X-RapidAPI-Host": RAPIDAPI_HOST,
-    "Content-Type": "application/json"
-}
-
-USE_REAL_API = True   # Set to True to use live API
+if not RAPIDAPI_KEY:
+    logger.warning("RAPIDAPI_KEY not set in environment. Skyscanner redirects will still work, but API features won't.")
 
 # ------------------------------------------------------------
-# Dummy data (fallback)
+# Global Error Handler (premium style)
 # ------------------------------------------------------------
-def get_dummy_flights(form_data):
-    return [
-        {'price': '$299', 'outbound_departure': '2025-06-01 08:00', 'outbound_arrival': '2025-06-01 11:00', 'inbound_departure': '', 'inbound_arrival': '', 'airline': 'SkyHigh Air'},
-        {'price': '$349', 'outbound_departure': '2025-06-01 14:00', 'outbound_arrival': '2025-06-01 17:00', 'inbound_departure': '', 'inbound_arrival': '', 'airline': 'JetStream'},
-        {'price': '$199', 'outbound_departure': '2025-06-02 06:00', 'outbound_arrival': '2025-06-02 09:00', 'inbound_departure': '', 'inbound_arrival': '', 'airline': 'BudgetWings'}
-    ]
+@app.errorhandler(Exception)
+def handle_exception(e):
+    """Show detailed error in browser (safe for development)"""
+    tb = traceback.format_exc()
+    logger.error(f"Unhandled exception: {tb}")
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head><title>⚠️ Server Error</title>
+    <style>
+        body {{ font-family: monospace; background: #f8d9da; padding: 2rem; }}
+        .error {{ background: white; border-radius: 1rem; padding: 1.5rem; max-width: 1000px; margin: auto; }}
+        pre {{ overflow-x: auto; background: #1e1e2f; color: #f8f9fa; padding: 1rem; border-radius: 0.5rem; }}
+    </style>
+    </head>
+    <body>
+    <div class="error">
+        <h2>🔥 Internal Server Error</h2>
+        <pre>{tb}</pre>
+        <p>Please check your configuration or try again later.</p>
+        <a href="/">← Back to Home</a>
+    </div>
+    </body>
+    </html>
+    """, 500
 
-def get_dummy_hotels(form_data):
-    return [
-        {'name': 'Grand Plaza', 'price_per_night': '$150', 'rating': 4.8, 'address': '123 Main St'},
-        {'name': 'Cozy Inn', 'price_per_night': '$89', 'rating': 4.2, 'address': '456 Oak Ave'},
-        {'name': 'Luxury Suites', 'price_per_night': '$250', 'rating': 4.9, 'address': '789 Beach Rd'}
-    ]
+# ------------------------------------------------------------
+# Favicon route (prevents 404/500)
+# ------------------------------------------------------------
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
 
-def get_dummy_cars(form_data):
-    return [
-        {'name': 'Toyota Corolla', 'price_per_day': '$45', 'supplier': 'Enterprise', 'transmission': 'Automatic'},
-        {'name': 'Honda Civic', 'price_per_day': '$50', 'supplier': 'Hertz', 'transmission': 'Manual'},
-        {'name': 'Tesla Model 3', 'price_per_day': '$120', 'supplier': 'Tesla Rentals', 'transmission': 'Automatic'}
-    ]
-
-# -------------------------------------------------------------------
-# Routes
-# -------------------------------------------------------------------
+# ------------------------------------------------------------
+# Homepage
+# ------------------------------------------------------------
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/flights', methods=['GET', 'POST'])
-def flights():
-    if request.method == 'POST':
-        origin = request.form.get('origin', '').upper().strip()
-        destination = request.form.get('destination', '').upper().strip()
-        depart_date = request.form.get('depart_date')
+# ------------------------------------------------------------
+# Skyscanner Direct Redirect Routes
+# ------------------------------------------------------------
+@app.route('/search/flights', methods=['POST'])
+def search_flights():
+    """Redirect user directly to Skyscanner flight search"""
+    try:
+        origin = request.form.get('origin', '').strip()
+        destination = request.form.get('destination', '').strip()
+        departure_date = request.form.get('departureDate', '').strip()
         adults = request.form.get('adults', 1)
+
+        # Basic validation
+        if not origin or not destination or not departure_date:
+            flash('Please fill in all required fields.', 'danger')
+            return redirect(url_for('index'))
+
+        # Build Skyscanner URL (using their standard pattern)
+        # Example: https://www.skyscanner.net/transport/flights/united-kingdom/france/2025-06-01/
+        # Replace spaces with hyphens for URL friendliness
+        origin_slug = origin.replace(' ', '-').lower()
+        dest_slug = destination.replace(' ', '-').lower()
+        skyscanner_url = f"https://www.skyscanner.net/transport/flights/{origin_slug}/{dest_slug}/{departure_date}/?adults={adults}"
         
-        if not all([origin, destination, depart_date]):
-            flash('Please fill all required fields.', 'danger')
-            return redirect(url_for('flights'))
-        
-        if not USE_REAL_API or not RAPIDAPI_KEY:
-            flash('Using demo data (API not configured).', 'info')
-            flights_data = get_dummy_flights(request.form)
-            return render_template('flights.html', results=flights_data, form_data=request.form)
-        
-        # Try real API
-        url = f"https://{RAPIDAPI_HOST}/flights/search"
-        payload = {
-            "origin": origin,
-            "destination": destination,
-            "departureDate": depart_date,
-            "adults": int(adults),
-            "cabinClass": "economy",
-            "currency": "USD"
-        }
-        try:
-            response = requests.post(url, json=payload, headers=HEADERS, timeout=10)
-            response.raise_for_status()
-            data = response.json()
-            flights_data = parse_flight_results(data)
-            if not flights_data:
-                flash('No flights found. Showing demo data.', 'warning')
-                flights_data = get_dummy_flights(request.form)
-            return render_template('flights.html', results=flights_data, form_data=request.form)
-        except Exception as e:
-            flash(f'API error: {str(e)}. Using demo data.', 'warning')
-            flights_data = get_dummy_flights(request.form)
-            return render_template('flights.html', results=flights_data, form_data=request.form)
+        logger.info(f"Redirecting flight search: {origin} → {destination} on {departure_date}")
+        return redirect(skyscanner_url)
     
-    return render_template('flights.html', results=None, form_data={})
+    except Exception as e:
+        logger.error(f"Flight redirect error: {e}")
+        flash('Invalid search parameters. Please try again.', 'danger')
+        return redirect(url_for('index'))
 
-def parse_flight_results(data):
-    flights = []
+@app.route('/search/hotels', methods=['POST'])
+def search_hotels():
+    """Redirect user directly to Skyscanner hotel search"""
     try:
-        itineraries = data.get('itineraries', []) or data.get('data', {}).get('itineraries', [])
-        for itin in itineraries[:20]:
-            price = itin.get('price', {}).get('raw', 'N/A')
-            outbound = itin.get('outbound', {})
-            inbound = itin.get('inbound', {})
-            flights.append({
-                'price': f"${price}" if price != 'N/A' else 'Price on request',
-                'outbound_departure': outbound.get('departureAt', ''),
-                'outbound_arrival': outbound.get('arrivalAt', ''),
-                'inbound_departure': inbound.get('departureAt', ''),
-                'inbound_arrival': inbound.get('arrivalAt', ''),
-                'airline': outbound.get('carriers', [{}])[0].get('name', 'Unknown')
-            })
-    except Exception:
-        pass
-    return flights
-
-@app.route('/hotels', methods=['GET', 'POST'])
-def hotels():
-    if request.method == 'POST':
-        location = request.form.get('location', '').strip()
-        check_in = request.form.get('check_in')
-        check_out = request.form.get('check_out')
+        location = request.form.get('entityId', '').strip()
+        check_in = request.form.get('checkIn', '').strip()
+        check_out = request.form.get('checkOut', '').strip()
         guests = request.form.get('guests', 2)
+
+        if not location or not check_in or not check_out:
+            flash('Please fill in all required fields.', 'danger')
+            return redirect(url_for('index'))
+
+        # Build Skyscanner hotel URL
+        location_slug = location.replace(' ', '-').lower()
+        skyscanner_url = f"https://www.skyscanner.net/hotels/search/{location_slug}/{check_in}/{check_out}/{guests}"
         
-        if not all([location, check_in, check_out]):
-            flash('Please fill all required fields.', 'danger')
-            return redirect(url_for('hotels'))
-        
-        if not USE_REAL_API or not RAPIDAPI_KEY:
-            flash('Using demo hotel data.', 'info')
-            hotels_data = get_dummy_hotels(request.form)
-            return render_template('hotels.html', results=hotels_data, form_data=request.form)
-        
-        url = f"https://{RAPIDAPI_HOST}/hotels/search"
-        payload = {
-            "location": location,
-            "checkIn": check_in,
-            "checkOut": check_out,
-            "guests": int(guests),
-            "currency": "USD"
-        }
-        try:
-            response = requests.post(url, json=payload, headers=HEADERS, timeout=10)
-            response.raise_for_status()
-            data = response.json()
-            hotels_data = parse_hotel_results(data)
-            if not hotels_data:
-                flash('No hotels found. Showing demo data.', 'warning')
-                hotels_data = get_dummy_hotels(request.form)
-            return render_template('hotels.html', results=hotels_data, form_data=request.form)
-        except Exception as e:
-            flash(f'API error: {str(e)}. Using demo data.', 'warning')
-            hotels_data = get_dummy_hotels(request.form)
-            return render_template('hotels.html', results=hotels_data, form_data=request.form)
+        logger.info(f"Redirecting hotel search: {location} from {check_in} to {check_out}")
+        return redirect(skyscanner_url)
     
-    return render_template('hotels.html', results=None, form_data={})
+    except Exception as e:
+        logger.error(f"Hotel redirect error: {e}")
+        flash('Invalid search parameters. Please try again.', 'danger')
+        return redirect(url_for('index'))
 
-def parse_hotel_results(data):
-    hotels = []
+@app.route('/search/cars', methods=['POST'])
+def search_cars():
+    """Redirect user directly to Skyscanner car hire search"""
     try:
-        hotels_list = data.get('hotels', []) or data.get('data', {}).get('hotels', [])
-        for hotel in hotels_list[:20]:
-            hotels.append({
-                'name': hotel.get('name', 'Unknown'),
-                'price_per_night': f"${hotel.get('pricePerNight', {}).get('amount', 'N/A')}",
-                'rating': hotel.get('rating', 'N/A'),
-                'address': hotel.get('address', {}).get('street', '')
-            })
-    except Exception:
-        pass
-    return hotels
+        pickup = request.form.get('pickupLocation', '').strip()
+        pickup_date = request.form.get('pickupDate', '').strip()
+        dropoff_date = request.form.get('dropoffDate', '').strip()
 
-@app.route('/cars', methods=['GET', 'POST'])
-def cars():
-    if request.method == 'POST':
-        pickup_location = request.form.get('pickup_location', '').upper().strip()
-        dropoff_location = request.form.get('dropoff_location', '').upper().strip()
-        pickup_date = request.form.get('pickup_date')
-        dropoff_date = request.form.get('dropoff_date')
+        if not pickup or not pickup_date or not dropoff_date:
+            flash('Please fill in all required fields.', 'danger')
+            return redirect(url_for('index'))
+
+        # Build Skyscanner car URL
+        pickup_slug = pickup.replace(' ', '-').lower()
+        skyscanner_url = f"https://www.skyscanner.net/carhire/search/{pickup_slug}/{pickup_date}/{dropoff_date}"
         
-        if not all([pickup_location, dropoff_location, pickup_date, dropoff_date]):
-            flash('Please fill all required fields.', 'danger')
-            return redirect(url_for('cars'))
-        
-        if not USE_REAL_API or not RAPIDAPI_KEY:
-            flash('Using demo car data.', 'info')
-            cars_data = get_dummy_cars(request.form)
-            return render_template('cars.html', results=cars_data, form_data=request.form)
-        
-        url = f"https://{RAPIDAPI_HOST}/cars/search"
-        payload = {
-            "pickUpLocation": pickup_location,
-            "dropOffLocation": dropoff_location,
-            "pickUpDate": pickup_date,
-            "dropOffDate": dropoff_date,
-            "currency": "USD"
-        }
-        try:
-            response = requests.post(url, json=payload, headers=HEADERS, timeout=10)
-            response.raise_for_status()
-            data = response.json()
-            cars_data = parse_car_results(data)
-            if not cars_data:
-                flash('No cars found. Showing demo data.', 'warning')
-                cars_data = get_dummy_cars(request.form)
-            return render_template('cars.html', results=cars_data, form_data=request.form)
-        except Exception as e:
-            flash(f'API error: {str(e)}. Using demo data.', 'warning')
-            cars_data = get_dummy_cars(request.form)
-            return render_template('cars.html', results=cars_data, form_data=request.form)
+        logger.info(f"Redirecting car search: pick up at {pickup} on {pickup_date}")
+        return redirect(skyscanner_url)
     
-    return render_template('cars.html', results=None, form_data={})
+    except Exception as e:
+        logger.error(f"Car redirect error: {e}")
+        flash('Invalid search parameters. Please try again.', 'danger')
+        return redirect(url_for('index'))
 
-def parse_car_results(data):
-    cars = []
-    try:
-        cars_list = data.get('vehicles', []) or data.get('data', {}).get('vehicles', [])
-        for car in cars_list[:20]:
-            cars.append({
-                'name': car.get('name', 'Unknown'),
-                'price_per_day': f"${car.get('pricePerDay', {}).get('amount', 'N/A')}",
-                'supplier': car.get('supplier', {}).get('name', 'Unknown'),
-                'transmission': car.get('transmission', 'N/A')
-            })
-    except Exception:
-        pass
-    return cars
+# ------------------------------------------------------------
+# Legacy routes (optional – kept for backward compatibility)
+# If you want to remove them, simply delete these three routes.
+# They are not used by the new homepage but might be linked from elsewhere.
+# ------------------------------------------------------------
+@app.route('/flights')
+def legacy_flights():
+    """Legacy flight page – redirect to homepage (or could show form)"""
+    return redirect(url_for('index'))
 
-# -------------------------------------------------------------------
+@app.route('/hotels')
+def legacy_hotels():
+    return redirect(url_for('index'))
+
+@app.route('/cars')
+def legacy_cars():
+    return redirect(url_for('index'))
+
+# ------------------------------------------------------------
+# Health check endpoint (useful for uptime monitoring)
+# ------------------------------------------------------------
+@app.route('/health')
+def health():
+    return {"status": "ok", "message": "Swift Travels is running"}, 200
+
+# ------------------------------------------------------------
+# Run the app
+# ------------------------------------------------------------
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
