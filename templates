@@ -1,0 +1,10 @@
+@app.route('/debug')
+def debug():
+    import os
+    files = os.listdir('.')
+    templates_exists = os.path.exists('templates')
+    if templates_exists:
+        templates_files = os.listdir('templates')
+    else:
+        templates_files = []
+    return f"Files in root: {files}<br>templates exists: {templates_exists}<br>templates files: {templates_files}"
