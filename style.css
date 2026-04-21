@@ -4,7 +4,6 @@
    ============================================ */
 
 :root {
-    /* Primary palette */
     --primary: #0d6efd;
     --primary-dark: #0a58ca;
     --primary-light: #3d8afd;
@@ -15,12 +14,10 @@
     --dark: #0f172a;
     --light: #f8fafc;
 
-    /* Gradients */
     --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --gradient-bg: linear-gradient(135deg, #f5f7fc 0%, #e9eef5 100%);
     --gradient-card: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%);
 
-    /* Effects */
     --glass-bg: rgba(255, 255, 255, 0.92);
     --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.12);
     --card-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.15);
@@ -228,6 +225,77 @@ body {
     background: linear-gradient(135deg, #10b981, #059669) !important;
 }
 
+/* ========== RESULT BOX (New) ========== */
+.results-container {
+    margin-top: 2rem;
+    padding: 1rem 0;
+}
+.flight-card {
+    background: white;
+    border-radius: 24px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: var(--transition);
+    border: 1px solid #eef2f6;
+}
+.flight-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+.flight-card .airline-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.flight-card .airline-logo {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+.flight-card .price {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--success);
+}
+.flight-card .times {
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+    margin: 1rem 0;
+}
+.flight-card .times .time {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+.flight-card .skyscanner-link {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 40px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+    text-align: center;
+    width: 100%;
+}
+.flight-card .skyscanner-link:hover {
+    background: var(--primary-dark);
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(13,110,253,0.3);
+}
+.loading-spinner {
+    text-align: center;
+    padding: 2rem;
+}
+.loading-spinner .spinner-border {
+    width: 3rem;
+    height: 3rem;
+    color: var(--primary);
+}
+
 /* ========== TOAST NOTIFICATIONS ========== */
 .toast-premium {
     background: rgba(0,0,0,0.85);
@@ -266,7 +334,7 @@ body {
     from { opacity: 0; transform: translateY(30px); }
     to { opacity: 1; transform: translateY(0); }
 }
-.animate-fade, .card, .list-group-item, .jumbotron-premium {
+.animate-fade, .card, .list-group-item, .jumbotron-premium, .flight-card {
     animation: fadeSlideUp 0.5s ease-out forwards;
 }
 
@@ -287,6 +355,10 @@ body {
     }
     .row.g-3 > [class*="col-"] {
         margin-bottom: 0.75rem;
+    }
+    .flight-card .times {
+        flex-direction: column;
+        gap: 0.5rem;
     }
 }
 
