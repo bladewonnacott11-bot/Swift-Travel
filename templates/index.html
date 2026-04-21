@@ -4,7 +4,7 @@
     <h1 class="display-4 fw-bold mb-3">Find Your Perfect Trip</h1>
     <p class="lead mb-4">Search flights, hotels, or car rentals – all in one place</p>
 
-    <div class="premium-card p-4" style="max-width: 800px; margin: 0 auto;">
+    <div class="premium-card p-4" style="max-width: 900px; margin: 0 auto;">
         <div class="mb-4">
             <label class="form-label fw-semibold">I want to book:</label>
             <div class="btn-group w-100" role="group">
@@ -14,76 +14,76 @@
             </div>
         </div>
 
-        <!-- Flight Form – CORRECTED URL -->
-        <form id="flight-form" action="https://www.skyscanner.net/transport/flights/" method="GET" target="_blank" class="search-form">
+        <!-- Flight Form – submits to backend for clean redirect -->
+        <form id="flight-form" action="/search/flights" method="POST" class="search-form">
             <div class="row g-3">
-                <div class="col-md-5">
+                <div class="col-12 col-md-5">
                     <label class="form-label">From (Country/City)</label>
                     <input type="text" name="origin" class="form-control form-control-premium" placeholder="e.g., United Kingdom, London" required>
                 </div>
-                <div class="col-md-5">
+                <div class="col-12 col-md-5">
                     <label class="form-label">To (Country/City)</label>
                     <input type="text" name="destination" class="form-control form-control-premium" placeholder="e.g., France, Paris" required>
                 </div>
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
                     <label class="form-label">Departure Date</label>
-                    <input type="date" name="departureDate" class="form-control form-control-premium" required>
+                    <input type="date" name="departureDate" class="form-control form-control-premium" required style="min-width: 0;">
                 </div>
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
                     <label class="form-label">Adults</label>
                     <input type="number" name="adults" class="form-control form-control-premium" value="1" min="1">
                 </div>
-                <div class="col-md-10 d-grid">
+                <div class="col-12 d-grid">
                     <button type="submit" class="btn-premium w-100 mt-3">Search Flights on Skyscanner</button>
                 </div>
             </div>
         </form>
 
-        <!-- Hotel Form – CORRECTED URL -->
-        <form id="hotel-form" action="https://www.skyscanner.net/hotels/search/" method="GET" target="_blank" class="search-form" style="display: none;">
+        <!-- Hotel Form -->
+        <form id="hotel-form" action="/search/hotels" method="POST" class="search-form" style="display: none;">
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label">Destination (City / Country)</label>
                     <input type="text" name="entityId" class="form-control form-control-premium" placeholder="e.g., Paris, France" required>
                 </div>
-                <div class="col-md-3">
+                <div class="col-6 col-md-3">
                     <label class="form-label">Check-in</label>
                     <input type="date" name="checkIn" class="form-control form-control-premium" required>
                 </div>
-                <div class="col-md-3">
+                <div class="col-6 col-md-3">
                     <label class="form-label">Check-out</label>
                     <input type="date" name="checkOut" class="form-control form-control-premium" required>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Guests</label>
                     <input type="number" name="guests" class="form-control form-control-premium" value="2" min="1">
                 </div>
-                <div class="col-md-10 d-grid">
+                <div class="col-12 d-grid">
                     <button type="submit" class="btn-premium w-100 mt-3">Search Hotels on Skyscanner</button>
                 </div>
             </div>
         </form>
 
-        <!-- Car Form – CORRECTED URL -->
-        <form id="car-form" action="https://www.skyscanner.net/carhire/search/" method="GET" target="_blank" class="search-form" style="display: none;">
+        <!-- Car Form -->
+        <form id="car-form" action="/search/cars" method="POST" class="search-form" style="display: none;">
             <div class="row g-3">
-                <div class="col-md-5">
+                <div class="col-12 col-md-5">
                     <label class="form-label">Pick-up Location (City / Airport)</label>
                     <input type="text" name="pickupLocation" class="form-control form-control-premium" placeholder="e.g., London" required>
                 </div>
-                <div class="col-md-5">
+                <div class="col-12 col-md-5">
                     <label class="form-label">Drop-off Location</label>
-                    <input type="text" name="dropoffLocation" class="form-control form-control-premium" placeholder="Same as pick-up" value="">
+                    <input type="text" name="dropoffLocation" class="form-control form-control-premium" placeholder="Same as pick-up">
                 </div>
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
                     <label class="form-label">Pick-up Date</label>
                     <input type="date" name="pickupDate" class="form-control form-control-premium" required>
                 </div>
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
                     <label class="form-label">Drop-off Date</label>
                     <input type="date" name="dropoffDate" class="form-control form-control-premium" required>
                 </div>
-                <div class="col-md-10 d-grid">
+                <div class="col-12 d-grid">
                     <button type="submit" class="btn-premium w-100 mt-3">Search Cars on Skyscanner</button>
                 </div>
             </div>
