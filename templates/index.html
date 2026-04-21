@@ -1,37 +1,113 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="jumbotron text-center py-5">
-    <h1 class="display-4">Find Cheap Travel Deals</h1>
-    <p class="lead">Search flights, hotels, and car hire using SkyScanner data</p>
-    <hr class="my-4">
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">✈️ Flights</h5>
-                    <p class="card-text">Find cheapest flights worldwide</p>
-                    <a href="/flights" class="btn btn-primary">Search Flights</a>
-                </div>
+<div class="jumbotron-premium text-center">
+    <h1 class="display-4 fw-bold mb-3">Find Your Perfect Trip</h1>
+    <p class="lead mb-4">Search flights, hotels, or car rentals – all in one place</p>
+    
+    <div class="premium-card p-4" style="max-width: 800px; margin: 0 auto;">
+        <div class="mb-4">
+            <label class="form-label fw-semibold">I want to book:</label>
+            <div class="btn-group w-100" role="group">
+                <button type="button" class="btn btn-outline-primary active" id="btn-flight">✈️ Flight</button>
+                <button type="button" class="btn btn-outline-primary" id="btn-hotel">🏨 Hotel</button>
+                <button type="button" class="btn btn-outline-primary" id="btn-car">🚗 Car</button>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">🏨 Hotels</h5>
-                    <p class="card-text">Discover affordable accommodation</p>
-                    <a href="/hotels" class="btn btn-success">Search Hotels</a>
+
+        <!-- Flight Form -->
+        <form id="flight-form" action="/flights" method="GET" class="search-form">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label">From (Airport/City)</label>
+                    <input type="text" name="origin" class="form-control form-control-premium" placeholder="LHR, JFK, CDG..." required>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">To (Airport/City)</label>
+                    <input type="text" name="destination" class="form-control form-control-premium" placeholder="DXB, LAX, SYD..." required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Departure</label>
+                    <input type="date" name="depart_date" class="form-control form-control-premium" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Adults</label>
+                    <input type="number" name="adults" class="form-control form-control-premium" value="1" min="1">
+                </div>
+                <div class="col-md-10 d-grid">
+                    <button type="submit" class="btn-premium w-100 mt-3">Search Flights</button>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">🚗 Car Hire</h5>
-                    <p class="card-text">Compare rental car prices</p>
-                    <a href="/cars" class="btn btn-warning">Search Cars</a>
+        </form>
+
+        <!-- Hotel Form -->
+        <form id="hotel-form" action="/hotels" method="GET" class="search-form" style="display: none;">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">City / Destination</label>
+                    <input type="text" name="location" class="form-control form-control-premium" placeholder="Paris, Tokyo, New York..." required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Check-in</label>
+                    <input type="date" name="check_in" class="form-control form-control-premium" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Check-out</label>
+                    <input type="date" name="check_out" class="form-control form-control-premium" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Guests</label>
+                    <input type="number" name="guests" class="form-control form-control-premium" value="2" min="1">
+                </div>
+                <div class="col-md-10 d-grid">
+                    <button type="submit" class="btn-premium w-100 mt-3">Search Hotels</button>
                 </div>
             </div>
-        </div>
+        </form>
+
+        <!-- Car Form -->
+        <form id="car-form" action="/cars" method="GET" class="search-form" style="display: none;">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label">Pick-up Location (IATA)</label>
+                    <input type="text" name="pickup_location" class="form-control form-control-premium" placeholder="LHR, LAX..." required>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">Drop-off Location (IATA)</label>
+                    <input type="text" name="dropoff_location" class="form-control form-control-premium" placeholder="Same as pick-up" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Pick-up Date</label>
+                    <input type="date" name="pickup_date" class="form-control form-control-premium" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Drop-off Date</label>
+                    <input type="date" name="dropoff_date" class="form-control form-control-premium" required>
+                </div>
+                <div class="col-md-10 d-grid">
+                    <button type="submit" class="btn-premium w-100 mt-3">Search Cars</button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
+
+<script>
+    const btnFlight = document.getElementById('btn-flight');
+    const btnHotel = document.getElementById('btn-hotel');
+    const btnCar = document.getElementById('btn-car');
+    const flightForm = document.getElementById('flight-form');
+    const hotelForm = document.getElementById('hotel-form');
+    const carForm = document.getElementById('car-form');
+
+    function setActive(activeBtn, activeForm) {
+        [btnFlight, btnHotel, btnCar].forEach(btn => btn.classList.remove('active'));
+        activeBtn.classList.add('active');
+        [flightForm, hotelForm, carForm].forEach(form => form.style.display = 'none');
+        activeForm.style.display = 'block';
+    }
+
+    btnFlight.addEventListener('click', () => setActive(btnFlight, flightForm));
+    btnHotel.addEventListener('click', () => setActive(btnHotel, hotelForm));
+    btnCar.addEventListener('click', () => setActive(btnCar, carForm));
+</script>
 {% endblock %}
