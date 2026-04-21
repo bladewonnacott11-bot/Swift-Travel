@@ -15,7 +15,7 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", os.urandom(24).hex())
 
 RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
-RAPIDAPI_HOST = "skyscanner89.p.rapidapi.com"   # or your actual host
+RAPIDAPI_HOST = "skyscanner89.p.rapidapi.com"   # Adjust to your actual host
 
 HEADERS = {
     "X-RapidAPI-Key": RAPIDAPI_KEY,
@@ -24,7 +24,7 @@ HEADERS = {
 }
 
 # ------------------------------------------------------------
-# Global Error Handler (unchanged)
+# Global Error Handler
 # ------------------------------------------------------------
 @app.errorhandler(Exception)
 def handle_exception(e):
@@ -60,84 +60,92 @@ def index():
     return render_template('index.html')
 
 # ------------------------------------------------------------
-# Helper: Convert city name to IATA code (simple mapping for demo)
-# In production, use Skyscanner Autosuggest API.
+# Helper: Get Sky ID (IATA) for a location name using the airport search API
 # ------------------------------------------------------------
-def get_iata_code(city_name):
-    """Very basic mapping – replace with real autosuggest."""
-    mapping = {
-        "london": "LON", "paris": "PAR", "new york": "NYC", "los angeles": "LAX",
-        "dubai": "DXB", "tokyo": "TYO", "singapore": "SIN", "bangkok": "BKK",
-        "united kingdom": "LON", "france": "PAR", "usa": "NYC", "us": "NYC"
+def get_sky_id(location_name, market="US", locale="en-US"):
+    """Search for airport/city and return the first matching skyId (IATA code)."""
+    url = f"https://{RAPIDAPI_HOST}/flights/searchAirport"
+    params = {
+        "market": market,
+        "locale": locale,
+        "query": location_name
     }
-    key = city_name.lower().strip()
-    for k, v in mapping.items():
-        if k in key:
-            return v
-    return None
+    try:
+        response = requests.get(url, headers=HEADERS, params=params, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        # The response structure may vary; typical fields: "data" -> list of places
+        places = data.get("data", []) or data.get("places", [])
+        if places and len(places) > 0:
+            # Return the skyId (IATA code) of the first result
+            return places[0].get("skyId") or places[0].get("iata")
+        else:
+            logger.warning(f"No airport found for {location_name}")
+            return None
+    except Exception as e:
+        logger.error(f"Airport search error for {location_name}: {e}")
+        return None
 
 # ------------------------------------------------------------
-# Flight Search – Get real Skyscanner URL via API
+# Flight Search – Get deep link from Skyscanner
 # ------------------------------------------------------------
 @app.route('/search/flights', methods=['POST'])
 def search_flights():
     try:
-        origin_city = request.form.get('origin', '').strip()
-        dest_city = request.form.get('destination', '').strip()
+        origin_name = request.form.get('origin', '').strip()
+        dest_name = request.form.get('destination', '').strip()
         depart_date = request.form.get('departureDate', '').strip()
         adults = request.form.get('adults', 1)
         max_price = request.form.get('maxPrice', '').strip()
 
-        if not origin_city or not dest_city or not depart_date:
+        if not origin_name or not dest_name or not depart_date:
             flash('Please fill in all required fields.', 'danger')
             return redirect(url_for('index'))
 
-        # Convert city names to IATA codes (you need a real autosuggest)
-        origin_iata = get_iata_code(origin_city)
-        dest_iata = get_iata_code(dest_city)
-        if not origin_iata or not dest_iata:
-            flash('Could not recognize airport codes. Please use city names like London, Paris, etc.', 'danger')
+        # Step 1: Convert names to Sky IDs (IATA codes)
+        origin_id = get_sky_id(origin_name)
+        dest_id = get_sky_id(dest_name)
+
+        if not origin_id or not dest_id:
+            flash(f'Could not find airport codes for "{origin_name}" or "{dest_name}". Please use a specific city name (e.g., London, Paris).', 'danger')
             return redirect(url_for('index'))
 
-        # Call Skyscanner API to get a shallow link / deep link
-        # Using the /flights/create-session or /flights/search endpoint.
-        # Many RapidAPI Skyscanner endpoints return a "deepLink" or "redirectUrl".
-        # I'll use a typical endpoint that works with your key.
+        # Step 2: Call the flight search endpoint that returns a deep link
+        # Use the "create-session" or "search" endpoint. I'll use "create-session".
         url = f"https://{RAPIDAPI_HOST}/flights/create-session"
         payload = {
-            "origin": origin_iata,
-            "destination": dest_iata,
+            "origin": origin_id,
+            "destination": dest_id,
             "departureDate": depart_date,
             "adults": int(adults),
             "cabinClass": "economy",
             "currency": "USD"
         }
-        response = requests.post(url, json=payload, headers=HEADERS, timeout=15)
-        response.raise_for_status()
-        data = response.json()
+        resp = requests.post(url, json=payload, headers=HEADERS, timeout=15)
+        resp.raise_for_status()
+        data = resp.json()
 
-        # Extract the redirect URL – field names vary by API
-        # Common fields: "deepLink", "sessionUrl", "redirectUrl", "itineraryUrl"
-        skyscanner_url = None
+        # Step 3: Extract the deep link (field name varies)
+        deep_link = None
         if "deepLink" in data:
-            skyscanner_url = data["deepLink"]
+            deep_link = data["deepLink"]
         elif "sessionUrl" in data:
-            skyscanner_url = data["sessionUrl"]
+            deep_link = data["sessionUrl"]
         elif "redirectUrl" in data:
-            skyscanner_url = data["redirectUrl"]
+            deep_link = data["redirectUrl"]
         elif "itineraryUrl" in data:
-            skyscanner_url = data["itineraryUrl"]
+            deep_link = data["itineraryUrl"]
         else:
-            # Fallback: build a manual URL (last resort)
-            skyscanner_url = f"https://www.skyscanner.net/transport/flights/{origin_iata}/{dest_iata}/{depart_date}/"
+            # Fallback: construct a manual URL (less reliable)
+            deep_link = f"https://www.skyscanner.net/transport/flights/{origin_id}/{dest_id}/{depart_date}/"
 
-        # Add max price as a query parameter if provided
+        # Step 4: Append max price if provided
         if max_price and max_price.isdigit():
-            separator = '&' if '?' in skyscanner_url else '?'
-            skyscanner_url += f"{separator}maxPrice={max_price}"
+            separator = '&' if '?' in deep_link else '?'
+            deep_link += f"{separator}maxPrice={max_price}"
 
-        logger.info(f"Redirecting flight: {skyscanner_url}")
-        return redirect(skyscanner_url)
+        logger.info(f"Redirecting to: {deep_link}")
+        return redirect(deep_link)
 
     except Exception as e:
         logger.error(f"Flight redirect error: {e}")
@@ -145,7 +153,7 @@ def search_flights():
         return redirect(url_for('index'))
 
 # ------------------------------------------------------------
-# Hotel Search – similar approach (simplified for now)
+# Hotel Search – direct URL (keep as before)
 # ------------------------------------------------------------
 @app.route('/search/hotels', methods=['POST'])
 def search_hotels():
@@ -160,7 +168,6 @@ def search_hotels():
             flash('Please fill in all required fields.', 'danger')
             return redirect(url_for('index'))
 
-        # Build a direct Skyscanner hotel URL (no API needed)
         location_slug = quote(location.replace(' ', '-').lower())
         base_url = f"https://www.skyscanner.net/hotels/search/{location_slug}/{check_in}/{check_out}/"
         params = [f"guests={guests}"]
