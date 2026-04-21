@@ -24,6 +24,13 @@ def handle_all_exceptions(e):
     """, 500
 
 # ------------------------------------------------------------
+# Favicon route – prevents 500 error for /favicon.ico
+# ------------------------------------------------------------
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204   # No content, no error
+
+# ------------------------------------------------------------
 # RapidAPI config
 # ------------------------------------------------------------
 RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
