@@ -24,6 +24,47 @@ HEADERS = {
 }
 
 # ------------------------------------------------------------
+# Country to airport IATA mapping (for common country names)
+# ------------------------------------------------------------
+COUNTRY_AIRPORT_MAP = {
+    "united kingdom": "LON",      # London (any airport)
+    "uk": "LON",
+    "england": "LON",
+    "united states": "NYC",       # New York (any airport)
+    "usa": "NYC",
+    "us": "NYC",
+    "france": "PAR",
+    "germany": "BER",             # Berlin
+    "italy": "ROM",               # Rome
+    "spain": "MAD",               # Madrid
+    "portugal": "LIS",
+    "netherlands": "AMS",
+    "belgium": "BRU",
+    "switzerland": "ZRH",
+    "austria": "VIE",
+    "sweden": "STO",
+    "norway": "OSL",
+    "denmark": "CPH",
+    "finland": "HEL",
+    "ireland": "DUB",
+    "poland": "WAW",
+    "greece": "ATH",
+    "turkey": "IST",
+    "uae": "DXB",
+    "united arab emirates": "DXB",
+    "india": "DEL",
+    "china": "BJS",
+    "japan": "TYO",
+    "australia": "SYD",
+    "canada": "YTO",
+    "mexico": "MEX",
+    "brazil": "SAO",
+    "argentina": "BUE",
+    "south africa": "JNB",
+    "egypt": "CAI",
+}
+
+# ------------------------------------------------------------
 # Global Error Handler
 # ------------------------------------------------------------
 @app.errorhandler(Exception)
@@ -60,10 +101,19 @@ def index():
     return render_template('index.html')
 
 # ------------------------------------------------------------
-# Helper: Get Sky ID (IATA) for a location name using the airport search API
+# Helper: Get Sky ID (IATA) for a location name (country or city)
 # ------------------------------------------------------------
 def get_sky_id(location_name, market="US", locale="en-US"):
-    """Search for airport/city and return the first matching skyId (IATA code)."""
+    """Convert a country or city name into an IATA airport code."""
+    location_lower = location_name.lower().strip()
+    
+    # 1. Check country mapping first
+    for country, iata in COUNTRY_AIRPORT_MAP.items():
+        if country in location_lower:
+            logger.info(f"Mapped country '{location_name}' to IATA {iata}")
+            return iata
+    
+    # 2. Try the API for city names
     url = f"https://{RAPIDAPI_HOST}/flights/searchAirport"
     params = {
         "market": market,
@@ -74,17 +124,18 @@ def get_sky_id(location_name, market="US", locale="en-US"):
         response = requests.get(url, headers=HEADERS, params=params, timeout=10)
         response.raise_for_status()
         data = response.json()
-        # The response structure may vary; typical fields: "data" -> list of places
         places = data.get("data", []) or data.get("places", [])
         if places and len(places) > 0:
-            # Return the skyId (IATA code) of the first result
-            return places[0].get("skyId") or places[0].get("iata")
-        else:
-            logger.warning(f"No airport found for {location_name}")
-            return None
+            sky_id = places[0].get("skyId") or places[0].get("iata")
+            if sky_id:
+                logger.info(f"API found IATA {sky_id} for '{location_name}'")
+                return sky_id
+        logger.warning(f"No airport found for '{location_name}' via API")
     except Exception as e:
         logger.error(f"Airport search error for {location_name}: {e}")
-        return None
+    
+    # 3. Fallback: return None (will trigger error message)
+    return None
 
 # ------------------------------------------------------------
 # Flight Search – Get deep link from Skyscanner
@@ -102,16 +153,15 @@ def search_flights():
             flash('Please fill in all required fields.', 'danger')
             return redirect(url_for('index'))
 
-        # Step 1: Convert names to Sky IDs (IATA codes)
+        # Convert names to Sky IDs (IATA codes)
         origin_id = get_sky_id(origin_name)
         dest_id = get_sky_id(dest_name)
 
         if not origin_id or not dest_id:
-            flash(f'Could not find airport codes for "{origin_name}" or "{dest_name}". Please use a specific city name (e.g., London, Paris).', 'danger')
+            flash(f'Could not find airport codes for "{origin_name}" or "{dest_name}". Please use a specific city name (e.g., London, Paris) or a supported country name (e.g., United Kingdom, France).', 'danger')
             return redirect(url_for('index'))
 
-        # Step 2: Call the flight search endpoint that returns a deep link
-        # Use the "create-session" or "search" endpoint. I'll use "create-session".
+        # Call the flight search endpoint that returns a deep link
         url = f"https://{RAPIDAPI_HOST}/flights/create-session"
         payload = {
             "origin": origin_id,
@@ -125,7 +175,7 @@ def search_flights():
         resp.raise_for_status()
         data = resp.json()
 
-        # Step 3: Extract the deep link (field name varies)
+        # Extract the deep link (field name varies)
         deep_link = None
         if "deepLink" in data:
             deep_link = data["deepLink"]
@@ -139,7 +189,7 @@ def search_flights():
             # Fallback: construct a manual URL (less reliable)
             deep_link = f"https://www.skyscanner.net/transport/flights/{origin_id}/{dest_id}/{depart_date}/"
 
-        # Step 4: Append max price if provided
+        # Append max price if provided
         if max_price and max_price.isdigit():
             separator = '&' if '?' in deep_link else '?'
             deep_link += f"{separator}maxPrice={max_price}"
@@ -153,7 +203,7 @@ def search_flights():
         return redirect(url_for('index'))
 
 # ------------------------------------------------------------
-# Hotel Search – direct URL (keep as before)
+# Hotel Search – direct URL
 # ------------------------------------------------------------
 @app.route('/search/hotels', methods=['POST'])
 def search_hotels():
