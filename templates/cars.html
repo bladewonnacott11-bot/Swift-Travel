@@ -4,19 +4,19 @@
 <form method="POST" class="row g-3 mb-4">
     <div class="col-md-3">
         <label>Pick-up Location (IATA)</label>
-        <input type="text" name="pickup_location" class="form-control" placeholder="LHR" value="{{ form_data.pickup_location or '' }}" required>
+        <input type="text" name="pickup_location" class="form-control" placeholder="LHR" value="{{ request.args.get('pickup_location', '') }}" required>
     </div>
     <div class="col-md-3">
         <label>Drop-off Location (IATA)</label>
-        <input type="text" name="dropoff_location" class="form-control" placeholder="LHR" value="{{ form_data.dropoff_location or '' }}" required>
+        <input type="text" name="dropoff_location" class="form-control" placeholder="LHR" value="{{ request.args.get('dropoff_location', '') }}" required>
     </div>
     <div class="col-md-2">
         <label>Pick-up Date</label>
-        <input type="date" name="pickup_date" class="form-control" value="{{ form_data.pickup_date or '' }}" required>
+        <input type="date" name="pickup_date" class="form-control" value="{{ request.args.get('pickup_date', '') }}" required>
     </div>
     <div class="col-md-2">
         <label>Drop-off Date</label>
-        <input type="date" name="dropoff_date" class="form-control" value="{{ form_data.dropoff_date or '' }}" required>
+        <input type="date" name="dropoff_date" class="form-control" value="{{ request.args.get('dropoff_date', '') }}" required>
     </div>
     <div class="col-md-2 align-self-end">
         <button type="submit" class="btn btn-warning w-100">Search Cars</button>
